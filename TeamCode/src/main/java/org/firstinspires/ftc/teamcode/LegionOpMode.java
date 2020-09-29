@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.util.concurrent.TimeUnit;
+
 @TeleOp(name="Slide DriveTrain", group="Driver Controlled")
 public class LegionOpMode extends OpMode {
     public final double P = 0;
@@ -41,9 +43,9 @@ public class LegionOpMode extends OpMode {
 
     @Override
     public void loop() {
-        elapsedTime = clock.time();
+        elapsedTime = clock.time(TimeUnit.SECONDS);
         clock.reset();
-        
+
         double leftPower = 0;
         double rightPower = 0;
         double strafePower = 0;

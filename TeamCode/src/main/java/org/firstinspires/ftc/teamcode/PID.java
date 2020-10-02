@@ -54,6 +54,7 @@ public class PID {
         errorOverTime += error * elapsedTime;
         if (errorOverTime > errorOverTimeMax) {
             errorOverTime = errorOverTimeMax;
-        }
+        } else if (errorOverTime < -errorOverTimeMax) {
+            errorOverTime = -errorOverTimeMax;
     }
 }

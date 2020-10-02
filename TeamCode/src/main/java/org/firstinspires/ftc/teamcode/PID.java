@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 public class PID {
-    private double kP = 0;
-    private double kI = 0;
-    private double kD = 0;
+    public double kP = 0;
+    public double kI = 0;
+    public double kD = 0;
     private double errorOverTimeMax = 10;
     private double setPoint = 0;
     private double error = 0;
@@ -22,7 +22,7 @@ public class PID {
     public double PIDLoop(double currentPos, double elapsedTime) {
         double processVar = 0;
         calcErrors(currentPos, elapsedTime);
-        processVar += calcP(currentPos) + calcI(currentPos) + calcD(currentPos, elapsedTime);
+        processVar += calcP() + calcI() + calcD(elapsedTime);
         previousError = error;
         return processVar;
     }
@@ -37,16 +37,16 @@ public class PID {
         kD = D;
     }
     
-    private double calcP(double currentPos) {
-        return error * kP;
+    private double calcP() {
+        return (error * kP);
     }
     
-    private double calcI(double currentPos) {
-        return errorOverTime * kI;
+    private double calcI() {
+        return (double)errorOverTime * (double)kI;
     }
     
-    private double calcD(double currentPos, double elapsedTime) {
-        return ((error - previousError)/elapsedTime) * kD;
+    private double calcD(double elapsedTime) {
+        return ((double)(error - previousError)/(double)elapsedTime) * (double)kD;
     }
     
     private void calcErrors(double currentPos, double elapsedTime) {

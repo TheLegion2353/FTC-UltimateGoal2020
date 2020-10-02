@@ -1,12 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -14,10 +10,9 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp(name="Slide DriveTrain", group="Driver Controlled")
 public class LegionOpMode extends OpMode {
-    public final double P = 10;
-    public final double I = 0;
-    public final double D = 0;
-    public final double F = 0;
+    public final double P = 0.1;
+    public final double I = 0.15;
+    public final double D = 0.05;
 
     private double leftPower = 0;
     private double rightPower = 0;
@@ -26,8 +21,10 @@ public class LegionOpMode extends OpMode {
     private double wobbleMotorPosition = 0;
 
     private boolean isRBDown = false;
+    private boolean isLBDown = false;
 
     private int wobbleGrabPosition = 0;
+    private int wobbleArmPositionSetpoints = 0;
 
     private ElapsedTime clock = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private double elapsedTime = 0;
@@ -35,27 +32,26 @@ public class LegionOpMode extends OpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor strafeDrive = null;
-    private DcMotorEx wobbleArm = null;
+    private DcMotor wobbleArm = null;
     private Servo wobbleGrab = null;
+    private PID PIDController = null;
+
     @Override
     public void init() {
+        PIDController = new PID(P, I, D, 0);
         wobbleGrabPosition = 0;
         leftDrive = hardwareMap.get(DcMotor.class, "lMotor");
         rightDrive = hardwareMap.get(DcMotor.class, "rMotor");
         strafeDrive = hardwareMap.get(DcMotor.class, "sMotor");
-        wobbleArm = (DcMotorEx)hardwareMap.get(DcMotor.class, "waMotor");
+        wobbleArm = hardwareMap.get(DcMotor.class, "waMotor");
         wobbleGrab = hardwareMap.get(Servo.class, "wgServo");
 
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         strafeDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        wobbleArm.setTargetPosition(0);
-        wobbleArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        wobbleArm.setPower(1);
+        wobbleArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         wobbleGrab.setPosition(0);
-
-        wobbleArm.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, new PIDFCoefficients(P, I, D, F));
     }
 
     @Override
@@ -66,7 +62,7 @@ public class LegionOpMode extends OpMode {
     }
 
     private void resetClock() {
-        elapsedTime = clock.time(TimeUnit.MILLISECONDS) / 1000;
+        elapsedTime = (double)clock.time(TimeUnit.MILLISECONDS) / 1000.0;
         clock.reset();
     }
 
@@ -96,13 +92,14 @@ public class LegionOpMode extends OpMode {
     }
 
     private void wobbleArmControl() {
-        wobbleMotorPower = gamepad1.right_trigger - gamepad1.left_trigger;
-        wobbleMotorPosition += wobbleMotorPower * elapsedTime * 10;
-        wobbleArm.setTargetPosition((int)wobbleMotorPosition);
+        PIDController.setSetPoint(wobbleMotorPosition);
+        wobbleMotorPower = PIDController.PIDLoop((double)wobbleArm.getCurrentPosition(), elapsedTime);
         telemetry.addData("Current Arm Position: ", wobbleArm.getCurrentPosition());
-        telemetry.addData("Target Arm Position: ", wobbleMotorPosition);
-        telemetry.addData("Wobble Arm Power: ", wobbleMotorPower);
+        telemetry.addData("Set Point: ", wobbleMotorPosition);
+        telemetry.addData("PID Process Variable: ", wobbleMotorPower);
         telemetry.addData("Elapsed Time: ", elapsedTime);
+        telemetry.addData("P Constant: ", PIDController.kP);
+        wobbleArm.setPower(wobbleMotorPower);
     }
 
     private void wobblePositionControl() {
@@ -119,6 +116,19 @@ public class LegionOpMode extends OpMode {
             isRBDown = false;
         }
 
+        if (gamepad1.left_bumper) {
+            if (!isLBDown) {
+                //gets run only once when first pressed
+                wobbleArmPositionSetpoints++;
+                if (wobbleArmPositionSetpoints > 2) {
+                    wobbleArmPositionSetpoints = 0;
+                }
+            }
+            isLBDown = true;
+        } else {
+            isLBDown = false;
+        }
+
         switch (wobbleGrabPosition) {
             case 0:
                 wobbleGrab.setPosition(0);
@@ -128,6 +138,21 @@ public class LegionOpMode extends OpMode {
                 break;
             default:
                 wobbleGrabPosition = 0;
+                break;
+        }
+
+        switch (wobbleArmPositionSetpoints) {
+            case 1:
+                wobbleMotorPosition = 170;
+                break;
+            case 2:
+                wobbleMotorPosition = 40;
+                break;
+            case 0:
+                wobbleMotorPosition += (gamepad1.left_trigger - gamepad1.right_trigger) * elapsedTime * 100;
+                break;
+            default:
+                wobbleMotorPosition = (gamepad1.left_trigger - gamepad1.right_trigger - 0.5) * 200;
                 break;
         }
     }

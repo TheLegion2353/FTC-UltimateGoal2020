@@ -21,7 +21,7 @@ public class PID {
 
     public double PIDLoop(double currentPos, double elapsedTime) {
         double processVar = 0;
-        calcErrors();
+        calcErrors(currentPos, elapsedTime);
         processVar += calcP(currentPos) + calcI(currentPos) + calcD(currentPos, elapsedTime);
         previousError = error;
         return processVar;
@@ -49,12 +49,13 @@ public class PID {
         return ((error - previousError)/elapsedTime) * kD;
     }
     
-    private void calcErrors() {
+    private void calcErrors(double currentPos, double elapsedTime) {
         error = setPoint - currentPos;
         errorOverTime += error * elapsedTime;
         if (errorOverTime > errorOverTimeMax) {
             errorOverTime = errorOverTimeMax;
         } else if (errorOverTime < -errorOverTimeMax) {
             errorOverTime = -errorOverTimeMax;
+        }
     }
 }

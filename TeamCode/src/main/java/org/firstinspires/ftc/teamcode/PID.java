@@ -12,7 +12,7 @@ public class PID {
         kD = D;
     }
 
-    public double PIDLoop(double currentPos) {
+    public double PIDLoop(double currentPos, double elapsedTime) {
         double processVar = 0;
         return processVar;
     }
@@ -25,5 +25,17 @@ public class PID {
         kP = P;
         kI = I;
         kD = D;
+    }
+    
+    private double calcP(double currentPos) {
+        return (setPoint - currrentPos) * kP;
+    }
+    
+    private double calcI(double currentPos, double elapsedTime) {
+        return (setPoint - currrentPos) * kP;
+    }
+    
+    private double calcD(double currentPos, double elapsedTime) {
+        return (setPoint - currrentPos) * kP;
     }
 }

@@ -10,9 +10,9 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp(name="Slide DriveTrain", group="Driver Controlled")
 public class LegionOpMode extends OpMode {
-    public final double P = 0.1;
-    public final double I = 0.15;
-    public final double D = 0.05;
+    public final double P = 0.009;
+    public final double I = 0.001;
+    public final double D = 0.001;
 
     private double leftPower = 0;
     private double rightPower = 0;
@@ -40,6 +40,17 @@ public class LegionOpMode extends OpMode {
     public void init() {
         PIDController = new PID(P, I, D, 0);
         wobbleGrabPosition = 0;
+        leftPower = 0;
+        rightPower = 0;
+        strafePower = 0;
+        wobbleMotorPower = 0;
+        wobbleMotorPosition = 0;
+        isRBDown = false;
+        isLBDown = false;
+        wobbleGrabPosition = 0;
+        wobbleArmPositionSetpoints = 0;
+        elapsedTime = 0;
+
         leftDrive = hardwareMap.get(DcMotor.class, "lMotor");
         rightDrive = hardwareMap.get(DcMotor.class, "rMotor");
         strafeDrive = hardwareMap.get(DcMotor.class, "sMotor");
@@ -143,10 +154,10 @@ public class LegionOpMode extends OpMode {
 
         switch (wobbleArmPositionSetpoints) {
             case 1:
-                wobbleMotorPosition = 170;
+                wobbleMotorPosition = -280;
                 break;
             case 2:
-                wobbleMotorPosition = 40;
+                wobbleMotorPosition = -110;
                 break;
             case 0:
                 wobbleMotorPosition += (gamepad1.left_trigger - gamepad1.right_trigger) * elapsedTime * 100;

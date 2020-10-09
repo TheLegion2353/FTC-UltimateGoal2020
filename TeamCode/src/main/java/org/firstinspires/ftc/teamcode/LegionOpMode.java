@@ -17,6 +17,8 @@ public class LegionOpMode extends OpMode {
     private double leftPower = 0;
     private double rightPower = 0;
     private double strafePower = 0;
+    private double firstFlyPower = 0;
+    private double secondFlyPower = 0;
     private double wobbleMotorPower = 0;
     private double wobbleMotorPosition = 0;
 
@@ -33,6 +35,8 @@ public class LegionOpMode extends OpMode {
     private DcMotor rightDrive = null;
     private DcMotor strafeDrive = null;
     private DcMotor wobbleArm = null;
+    private DcMotor firstFlywheel = null;
+    private DcMotor secondFlywheel = null;
     private Servo wobbleGrab = null;
     private PID PIDController = null;
 
@@ -43,6 +47,8 @@ public class LegionOpMode extends OpMode {
         leftPower = 0;
         rightPower = 0;
         strafePower = 0;
+        firstFlyPower = 0;
+        secondFlyPower = 0;
         wobbleMotorPower = 0;
         wobbleMotorPosition = 0;
         isRBDown = false;
@@ -56,11 +62,14 @@ public class LegionOpMode extends OpMode {
         strafeDrive = hardwareMap.get(DcMotor.class, "sMotor");
         wobbleArm = hardwareMap.get(DcMotor.class, "waMotor");
         wobbleGrab = hardwareMap.get(Servo.class, "wgServo");
-
+        firstFlywheel = hardwareMap.get(DcMotor.class, "firstFlywheel");
+        secondFlywheel = hardwareMap.get(DcMotor.class, "secondFlywheel");
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         strafeDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         wobbleArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        firstFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        secondFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         wobbleGrab.setPosition(0);
     }
@@ -86,12 +95,15 @@ public class LegionOpMode extends OpMode {
         slideDriveControl();
         wobbleArmControl();
         wobblePositionControl();
+        flywheelControl();
     }
 
     private void setPowers() {
         leftDrive.setPower(-leftPower);
         rightDrive.setPower(-rightPower);
         strafeDrive.setPower(strafePower);
+        firstFlywheel.setPower(firstFlyPower);
+        secondFlywheel.setPower(secondFlyPower);
     }
 
     private void slideDriveControl() {
@@ -99,7 +111,7 @@ public class LegionOpMode extends OpMode {
         rightPower = -gamepad1.left_stick_y;
         leftPower -= gamepad1.right_stick_x;
         rightPower -= gamepad1.right_stick_x;
-        strafePower -= gamepad1.left_stick_x;
+        strafePower = gamepad1.left_stick_x;
     }
 
     private void wobbleArmControl() {
@@ -108,8 +120,6 @@ public class LegionOpMode extends OpMode {
         telemetry.addData("Current Arm Position: ", wobbleArm.getCurrentPosition());
         telemetry.addData("Set Point: ", wobbleMotorPosition);
         telemetry.addData("PID Process Variable: ", wobbleMotorPower);
-        telemetry.addData("Elapsed Time: ", elapsedTime);
-        telemetry.addData("P Constant: ", PIDController.kP);
         wobbleArm.setPower(wobbleMotorPower);
     }
 
@@ -165,6 +175,16 @@ public class LegionOpMode extends OpMode {
             default:
                 wobbleMotorPosition = (gamepad1.left_trigger - gamepad1.right_trigger - 0.5) * 200;
                 break;
+        }
+    }
+
+    private void flywheelControl() {
+        if (gamepad1.y) {
+            firstFlyPower = 1;
+            secondFlyPower = 1;
+        } else {
+            firstFlyPower = 0;
+            secondFlyPower = 0;
         }
     }
 }

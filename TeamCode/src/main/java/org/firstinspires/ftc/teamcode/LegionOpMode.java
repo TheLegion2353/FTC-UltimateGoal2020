@@ -10,9 +10,17 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp(name="Slide DriveTrain", group="Driver Controlled")
 public class LegionOpMode extends OpMode {
-    public final double P = 0.009;
-    public final double I = 0.001;
-    public final double D = 0.001;
+    public final double armP = 0.009;
+    public final double armI = 0.001;
+    public final double armD = 0.001;
+
+    public final double flywheelOneP = 0;
+    public final double flywheelOneI = 0;
+    public final double flywheelOneD = 0;
+
+    public final double flywheelTwoP = 0;
+    public final double flywheelTwoI = 0;
+    public final double flywheelTwoD = 0;
 
     private double leftPower = 0;
     private double rightPower = 0;
@@ -38,11 +46,16 @@ public class LegionOpMode extends OpMode {
     private DcMotor firstFlywheel = null;
     private DcMotor secondFlywheel = null;
     private Servo wobbleGrab = null;
-    private PID PIDController = null;
+    private PID armPID = null;
+    private PID flywheelOnePID = null;
+    private PID flywheelTwoPID = null;
 
     @Override
     public void init() {
-        PIDController = new PID(P, I, D, 0);
+        armPID = new PID(armP, armI, armD, 0);
+        flywheelOnePID = new PID(flywheelOneP, flywheelOneI, flywheelOneD, 0);
+        flywheelTwoPID = new PID(flywheelTwoP, flywheelTwoI, flywheelTwoD, 0);
+
         wobbleGrabPosition = 0;
         leftPower = 0;
         rightPower = 0;
@@ -115,11 +128,10 @@ public class LegionOpMode extends OpMode {
     }
 
     private void wobbleArmControl() {
-        PIDController.setSetPoint(wobbleMotorPosition);
-        wobbleMotorPower = PIDController.PIDLoop((double)wobbleArm.getCurrentPosition(), elapsedTime);
-        telemetry.addData("Current Arm Position: ", wobbleArm.getCurrentPosition());
-        telemetry.addData("Set Point: ", wobbleMotorPosition);
-        telemetry.addData("PID Process Variable: ", wobbleMotorPower);
+        armPID.setSetPoint(wobbleMotorPosition);
+        wobbleMotorPower = armPID.PIDLoop((double)wobbleArm.getCurrentPosition(), elapsedTime);
+        telemetry.addData("Flywheel 1 Speed: ", 0);
+        telemetry.addData("Flywheel 2 Speed: ", 0);
         wobbleArm.setPower(wobbleMotorPower);
     }
 

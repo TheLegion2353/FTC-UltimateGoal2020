@@ -8,7 +8,7 @@ public class Drivetrain {
     private HardwareController leftGroup = null;
     private HardwareController rightGroup = null;
     private HardwareController centerGroup = null;
-    Gamepad gamepad = null;
+    private Gamepad gamepad = null;
 
     public Drivetrain(ControlType ct, Gamepad gp) {
         control = ct;

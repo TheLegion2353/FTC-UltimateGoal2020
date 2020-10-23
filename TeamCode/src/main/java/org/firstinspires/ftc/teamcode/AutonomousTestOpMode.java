@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.Robot.Robot;
 
-@TeleOp(name="Test Drive", group="Driver Controlled")
-public class TestOpMode extends OpMode {
+@Autonomous(name="Test Auto", group="Autonomous")
+public class AutonomousTestOpMode extends OpMode {
     Robot robot = new Robot(gamepad1);
 
     @Override

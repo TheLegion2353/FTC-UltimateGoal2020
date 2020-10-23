@@ -1,17 +1,18 @@
 package org.firstinspires.ftc.teamcode.Robot;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 
 public class Drivetrain {
     private ControlType control;
     private HardwareController leftGroup = null;
     private HardwareController rightGroup = null;
     private HardwareController centerGroup = null;
+    Gamepad gamepad = null;
 
-    public Drivetrain(ControlType ct) {
+    public Drivetrain(ControlType ct, Gamepad gp) {
         control = ct;
+        gamepad = gp;
         leftGroup = new HardwareController();
         rightGroup = new HardwareController();
         centerGroup = new HardwareController();
@@ -35,19 +36,19 @@ public class Drivetrain {
         }
     }
 
-    public void update(double leftX, double leftY, double rightX, double rightY) {
+    public void update() {
         switch (control) {
             case TANK:
-                leftGroup.setSpeed(leftY);
-                rightGroup.setSpeed(rightY);
+                leftGroup.setSpeed(gamepad.left_stick_y);
+                rightGroup.setSpeed(gamepad.right_stick_y);
                 break;
 
             case ARCADE:
-                double leftPower = leftY - rightX;
-                double rightPower = -leftY - rightX;
+                double leftPower = gamepad.left_stick_y - gamepad.right_stick_x;
+                double rightPower = -gamepad.left_stick_y - gamepad.right_stick_x;
                 leftPower = -leftPower;
                 rightPower = -rightPower;
-                double strafePower = leftX;
+                double strafePower = gamepad.left_stick_x;
                 leftGroup.setSpeed(leftPower);
                 rightGroup.setSpeed(rightPower);
                 centerGroup.setSpeed(strafePower);

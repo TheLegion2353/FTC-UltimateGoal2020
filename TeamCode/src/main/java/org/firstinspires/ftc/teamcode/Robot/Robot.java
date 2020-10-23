@@ -1,18 +1,35 @@
 package org.firstinspires.ftc.teamcode.Robot;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import java.util.concurrent.TimeUnit;
 
 public class Robot {
     private Drivetrain slide = null;
     private Arm arm = null;
+    private Shooter shooter = null;
+    private ElapsedTime clock = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    private double elapsedTime = 0;
+    private Gamepad gamepad = null;
 
-    public Robot() {
-        slide = new Drivetrain(Drivetrain.ControlType.ARCADE);
+    public Robot(Gamepad gp) {
+        gamepad = gp;
+        elapsedTime = 0;
+        slide = new Drivetrain(Drivetrain.ControlType.ARCADE, gp);
     }
 
-    public void update(double leftX, double leftY, double rightX, double rightY, double armPosition, double elapsedTime) {
-        slide.update(leftX, leftY, rightX, rightY);
-        arm.update(armPosition, elapsedTime);
+    public void update(double armPosition) {
+        elapsedTime = (double)clock.time(TimeUnit.MILLISECONDS) / 1000.0;
+        clock.reset();
+        slide.update();
+        if (arm != null) {
+            arm.update(armPosition, elapsedTime);
+        }
+
+        if (shooter != null) {
+            shooter.update();
+        }
     }
 
     public void setLeftGroup(DcMotor ... motors) {
@@ -29,6 +46,10 @@ public class Robot {
 
     public void setArmMotor(DcMotor m) {
         arm = new Arm(m);
+    }
+
+    public void setShooter(DcMotor ... motors) {
+        shooter = new Shooter(gamepad, motors);
     }
 
     public double getArmPosition() {

@@ -21,8 +21,6 @@ public class AutonomousTestOpMode extends OpMode {
 
     @Override
     public void loop() {
-        robot.update(0);
-        telemetry.addData("Arm Position: ", robot.getArmPosition());
         telemetry.update();
     }
 }

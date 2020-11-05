@@ -4,29 +4,37 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class Robot {
+    ArrayList<RobotPart> parts = new ArrayList<RobotPart>();
     private Drivetrain slide = null;
-    private Arm arm = null;
     private Grabber grabber = null;
     private Shooter shooter = null;
+    private Intake intake = null;
     private ElapsedTime clock = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    private double elapsedTime = 0;
     private Gamepad gamepad = null;
+
+    public Robot() {
+
+    }
 
     public Robot(Gamepad gp) {
         gamepad = gp;
-        elapsedTime = 0;
         slide = new Drivetrain(Drivetrain.ControlType.ARCADE, gamepad);
     }
 
-    public void update(double armPosition) {
-        elapsedTime = (double)clock.time(TimeUnit.MILLISECONDS) / 1000.0;
-        clock.reset();
-        slide.update();
-        if (arm != null) {
-            arm.update(elapsedTime);
+    public void update() {
+        double time = (double)clock.time(TimeUnit.MILLISECONDS) / 1000.0;
+
+        for (RobotPart part : parts) {
+            part.update();
+        }
+
+        if (slide != null) {
+            slide.update();
         }
 
         if (shooter != null) {
@@ -37,6 +45,11 @@ public class Robot {
             grabber.update();
         }
 
+        if (intake != null) {
+            intake.update();
+        }
+
+        clock.reset();
     }
 
     public void setLeftGroup(DcMotor ... motors) {
@@ -52,7 +65,7 @@ public class Robot {
     }
 
     public void setArmMotor(DcMotor m) {
-        arm = new Arm(gamepad, m);
+        parts.add(new Arm(gamepad, m));
     }
 
     public void setShooter(DcMotor ... motors) {
@@ -63,7 +76,7 @@ public class Robot {
         grabber = new Grabber(gamepad, s);
     }
 
-    public double getArmPosition() {
-        return arm.getArmPosition();
+    public void setIntake(DcMotor ... motors) {
+        intake = new Intake(gamepad, motors);
     }
 }

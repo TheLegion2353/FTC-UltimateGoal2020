@@ -3,16 +3,15 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 
-public class Drivetrain {
+public class Drivetrain extends RobotPart {
     private ControlType control;
     private HardwareController leftGroup = null;
     private HardwareController rightGroup = null;
     private HardwareController centerGroup = null;
-    private Gamepad gamepad = null;
 
     public Drivetrain(ControlType ct, Gamepad gp) {
+        super(gp);
         control = ct;
-        gamepad = gp;
         leftGroup = new HardwareController();
         rightGroup = new HardwareController();
         centerGroup = new HardwareController();
@@ -36,24 +35,31 @@ public class Drivetrain {
         }
     }
 
-    public void update() {
-        switch (control) {
-            case TANK:
-                leftGroup.setSpeed(gamepad.left_stick_y);
-                rightGroup.setSpeed(gamepad.right_stick_y);
-                break;
+    @Override
+    protected void autonomousUpdate() {
 
-            case ARCADE:
-                double leftPower = gamepad.left_stick_y - gamepad.right_stick_x;
-                double rightPower = -gamepad.left_stick_y - gamepad.right_stick_x;
-                leftPower = -leftPower;
-                rightPower = -rightPower;
-                double strafePower = gamepad.left_stick_x;
-                leftGroup.setSpeed(leftPower);
-                rightGroup.setSpeed(rightPower);
-                centerGroup.setSpeed(strafePower);
-                break;
+    }
 
+    @Override
+    protected void driverUpdate() {
+        if (gamepad != null) {
+            switch (control) {
+                case TANK:
+                    leftGroup.setSpeed(gamepad.left_stick_y);
+                    rightGroup.setSpeed(gamepad.right_stick_y);
+                    break;
+
+                case ARCADE:
+                    double leftPower = gamepad.left_stick_y - gamepad.right_stick_x;
+                    double rightPower = -gamepad.left_stick_y - gamepad.right_stick_x;
+                    leftPower = -leftPower;
+                    rightPower = -rightPower;
+                    double strafePower = gamepad.left_stick_x;
+                    leftGroup.setSpeed(leftPower);
+                    rightGroup.setSpeed(rightPower);
+                    centerGroup.setSpeed(strafePower);
+                    break;
+            }
         }
     }
 

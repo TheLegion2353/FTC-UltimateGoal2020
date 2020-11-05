@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Robot.Robot;
 
-@TeleOp(name="Test Drive", group="Driver Controlled")
+@TeleOp(name="Slide Drive Main", group="Driver Controlled")
 public class TestOpMode extends OpMode {
     Robot robot = null;
 
@@ -18,15 +18,14 @@ public class TestOpMode extends OpMode {
         robot.setRightGroup(hardwareMap.get(DcMotor.class, "rMotor"));
         robot.setSlideGroup(hardwareMap.get(DcMotor.class, "sMotor"));
         robot.setArmMotor(hardwareMap.get(DcMotor.class, "waMotor"));
-        robot.setShooter(hardwareMap.get(DcMotor.class, "firstFlywheel"), hardwareMap.get(DcMotor.class, "secondFlywheel"));
+        robot.setShooter(hardwareMap.get(DcMotor.class, "firstFlywheel"));
+        robot.setIntake(hardwareMap.get(DcMotor.class, "intakeMotor"));
         robot.setGrabber(hardwareMap.get(Servo.class, "wgServo"));
     }
 
-
     @Override
     public void loop() {
-        robot.update(0);
-        telemetry.addData("Arm Position: ", robot.getArmPosition());
+        robot.update();
         telemetry.update();
     }
 }

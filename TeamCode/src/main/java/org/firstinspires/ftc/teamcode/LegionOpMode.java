@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -7,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.concurrent.TimeUnit;
-
+@Disabled
 @TeleOp(name="Slide DriveTrain", group="Driver Controlled")
 public class LegionOpMode extends OpMode {
     public final double armP = 0.009;
@@ -76,7 +77,7 @@ public class LegionOpMode extends OpMode {
         wobbleArm = hardwareMap.get(DcMotor.class, "waMotor");
         wobbleGrab = hardwareMap.get(Servo.class, "wgServo");
         firstFlywheel = hardwareMap.get(DcMotor.class, "firstFlywheel");
-        secondFlywheel = hardwareMap.get(DcMotor.class, "secondFlywheel");
+        secondFlywheel = hardwareMap.get(DcMotor.class, "intakeMotor");
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         strafeDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -129,7 +130,7 @@ public class LegionOpMode extends OpMode {
 
     private void wobbleArmControl() {
         armPID.setSetPoint(wobbleMotorPosition);
-        wobbleMotorPower = armPID.PIDLoop((double)wobbleArm.getCurrentPosition(), elapsedTime);
+        wobbleMotorPower = armPID.PIDLoop((double)wobbleArm.getCurrentPosition());
         telemetry.addData("Flywheel 1 Speed: ", 0);
         telemetry.addData("Flywheel 2 Speed: ", 0);
         wobbleArm.setPower(wobbleMotorPower);

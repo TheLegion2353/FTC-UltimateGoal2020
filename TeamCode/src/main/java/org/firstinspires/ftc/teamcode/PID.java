@@ -1,4 +1,6 @@
 package org.firstinspires.ftc.teamcode;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import java.util.concurrent.TimeUnit;
 
 public class PID {
     public double kP = 0;
@@ -9,6 +11,7 @@ public class PID {
     private double error = 0;
     private double previousError = 0;
     private double errorOverTime = 0;
+    private ElapsedTime clock = null;
     
     public PID(double P, double I, double D, double sp) {
         kP = P;
@@ -17,12 +20,14 @@ public class PID {
         setPoint = sp;
         error = setPoint - error;
         previousError = error;
+        clock = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     }
 
-    public double PIDLoop(double currentPos, double elapsedTime) {
+    public double PIDLoop(double currentPos) {
         double processVar = 0;
-        calcErrors(currentPos, elapsedTime);
-        processVar += calcP() + calcI() + calcD(elapsedTime);
+        double time = (double)clock.time(TimeUnit.MILLISECONDS) / 1000.0;
+        calcErrors(currentPos, time);
+        processVar += calcP() + calcI() + calcD(time);
         previousError = error;
         return processVar;
     }

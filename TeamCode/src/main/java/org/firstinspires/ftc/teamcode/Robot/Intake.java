@@ -3,16 +3,21 @@ import java.util.ArrayList;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-public class Intake {
-	private HardwareController intake = null;
-	private Gamepad gamepad = null;
+public class Intake extends RobotPart {
+	private HardwareController motorGroup = null;
 
 	public Intake(Gamepad gp, DcMotor ... motors) {
-		intake = new HardwareController(DcMotor.RunMode.RUN_USING_ENCODER, motors);
-		gamepad = gp;
+		super(gp);
+		motorGroup = new HardwareController(DcMotor.RunMode.RUN_USING_ENCODER, motors);
 	}
 
-	public void update() {
-		intake.setSpeed(gamepad.right_trigger - gamepad.left_trigger);
+	@Override
+	protected void driverUpdate() {
+		motorGroup.setSpeed(gamepad.right_trigger - gamepad.left_trigger);
+	}
+
+	@Override
+	protected void autonomousUpdate() {
+
 	}
 }

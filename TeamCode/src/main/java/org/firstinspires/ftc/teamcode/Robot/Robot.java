@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Robot;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -14,6 +15,7 @@ public class Robot {
     private Grabber grabber = null;
     private Shooter shooter = null;
     private Intake intake = null;
+    private Elevator elevator = null;
     private ElapsedTime clock = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private Gamepad gamepad = null;
 
@@ -23,7 +25,9 @@ public class Robot {
 
     public Robot(Gamepad gp) {
         gamepad = gp;
+
         slide = new Drivetrain(Drivetrain.ControlType.ARCADE, gamepad);
+        parts.add(slide);
     }
 
     public void update() {
@@ -32,10 +36,10 @@ public class Robot {
         for (RobotPart part : parts) {
             part.update();
         }
-
+/*
         if (slide != null) {
             slide.update();
-        }
+        }*/
 
         if (shooter != null) {
             shooter.update();
@@ -49,6 +53,9 @@ public class Robot {
             intake.update();
         }
 
+        if (elevator != null) {
+            elevator.update();
+        }
         clock.reset();
     }
 
@@ -78,5 +85,9 @@ public class Robot {
 
     public void setIntake(DcMotor ... motors) {
         intake = new Intake(gamepad, motors);
+    }
+
+    public void addElevator(CRServo crServo) {
+        elevator = new Elevator(gamepad, crServo);
     }
 }

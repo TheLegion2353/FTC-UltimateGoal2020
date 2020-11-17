@@ -15,9 +15,9 @@ public class Elevator extends RobotPart {
 	@Override
 	protected void driverUpdate() {
 		if (gamepad.x) {
-			elevator.setSpeed(1);
+			elevator.setSpeed(.5);
 		} else if (gamepad.a) {
-			elevator.setSpeed(-1);
+			elevator.setSpeed(-.5);
 		} else {
 			elevator.setSpeed(0);
 		}

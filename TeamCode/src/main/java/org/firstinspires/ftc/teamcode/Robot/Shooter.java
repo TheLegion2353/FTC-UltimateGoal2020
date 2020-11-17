@@ -14,7 +14,7 @@ public class Shooter {
 
     public void update() {
         if (gamepad.y) {
-            shooter.setSpeed(-1);
+            shooter.setSpeed(1);
         } else {
             shooter.setSpeed(0);
         }

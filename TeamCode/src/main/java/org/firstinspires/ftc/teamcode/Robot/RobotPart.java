@@ -24,4 +24,7 @@ public class RobotPart {
 
 	}
 
+	public void setGamepad(Gamepad gp) {
+    	gamepad = gp;
+	}
 }

@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -18,9 +20,16 @@ public class Robot {
     private Elevator elevator = null;
     private ElapsedTime clock = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private Gamepad gamepad = null;
+    private Telemetry telemetry = null;
+    private ServoWacker wacker = null;
+    int xPosition = 0;
+    int yPosition = 0;
 
-    public Robot() {
-
+    public Robot(Gamepad gp, Telemetry t) {
+        telemetry = t;
+        gamepad = gp;
+        slide = new Drivetrain(Drivetrain.ControlType.ARCADE, gamepad);
+        parts.add(slide);
     }
 
     public Robot(Gamepad gp) {
@@ -30,16 +39,16 @@ public class Robot {
         parts.add(slide);
     }
 
+    public void move(int x, int y) {
+        slide.move(x, y);
+    }
+
     public void update() {
         double time = (double)clock.time(TimeUnit.MILLISECONDS) / 1000.0;
 
         for (RobotPart part : parts) {
             part.update();
         }
-/*
-        if (slide != null) {
-            slide.update();
-        }*/
 
         if (shooter != null) {
             shooter.update();
@@ -56,6 +65,11 @@ public class Robot {
         if (elevator != null) {
             elevator.update();
         }
+
+        if (wacker != null) {
+            wacker.update();
+        }
+
         clock.reset();
     }
 
@@ -72,7 +86,7 @@ public class Robot {
     }
 
     public void setArmMotor(DcMotor m) {
-        parts.add(new Arm(gamepad, m));
+        parts.add(new Arm(gamepad, m, telemetry));
     }
 
     public void setShooter(DcMotor ... motors) {
@@ -89,5 +103,9 @@ public class Robot {
 
     public void addElevator(CRServo crServo) {
         elevator = new Elevator(gamepad, crServo);
+    }
+
+    public void addWacker(Servo servo) {
+        wacker = new ServoWacker(gamepad, servo);
     }
 }

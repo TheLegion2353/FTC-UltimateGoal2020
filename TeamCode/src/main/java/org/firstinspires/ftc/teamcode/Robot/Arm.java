@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Robot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.PID;
 
 public class Arm extends RobotPart {
@@ -14,9 +15,17 @@ public class Arm extends RobotPart {
     private boolean isLBDown = false;
     private DcMotor motor = null;
     private PID PIDController = null;
+    private Telemetry telemetry = null;
     double position = 0;
 
     public Arm(Gamepad gp, DcMotor m) {
+        super(gp);
+        motor = m;
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        PIDController = new PID(armP, armI, armD, motor.getCurrentPosition());
+    }
+
+    public Arm(Gamepad gp, DcMotor m, Telemetry t) {
         super(gp);
         motor = m;
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -45,10 +54,10 @@ public class Arm extends RobotPart {
 
         switch (wobbleArmPositionSetpoints) {
             case 1:
-                position = -90;
+                position = -60;
                 break;
             case 2:
-                position = -260;
+                position = -410;
                 break;
 
         }
@@ -56,6 +65,10 @@ public class Arm extends RobotPart {
         PIDController.setSetPoint(position);
         double power = PIDController.PIDLoop((double)motor.getCurrentPosition());
         motor.setPower(power);
+        if (telemetry != null) {
+            telemetry.addData("Position: ", position);
+            telemetry.update();
+        }
     }
 
     public void setArmPosition(double pos) {

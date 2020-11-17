@@ -14,7 +14,7 @@ public class TestOpMode extends OpMode {
 
     @Override
     public void init() {
-        robot = new Robot(gamepad1);
+        robot = new Robot(gamepad1, telemetry);
         robot.setLeftGroup(hardwareMap.get(DcMotor.class, "lMotor"));
         robot.setRightGroup(hardwareMap.get(DcMotor.class, "rMotor"));
         robot.setSlideGroup(hardwareMap.get(DcMotor.class, "sMotor"));

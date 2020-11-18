@@ -52,8 +52,6 @@ public class Robot {
             part.update();
         }
 
-        slide.setPosition(x, y, a);
-
         if (shooter != null) {
             shooter.update();
         }
@@ -117,5 +115,6 @@ public class Robot {
         xPosition = x;
         yPosition = y;
         angle = a;
+        slide.setPosition(x, y, a);
     }
 }

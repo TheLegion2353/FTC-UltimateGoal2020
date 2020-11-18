@@ -30,14 +30,14 @@ public class Robot {
     public Robot(Gamepad gp, Telemetry t) {
         telemetry = t;
         gamepad = gp;
-        slide = new Drivetrain(Drivetrain.ControlType.ARCADE, gamepad);
+        slide = new Drivetrain(Drivetrain.ControlType.ARCADE, gamepad, telemetry);
         parts.add(slide);
     }
 
     public Robot(Gamepad gp) {
         gamepad = gp;
 
-        slide = new Drivetrain(Drivetrain.ControlType.ARCADE, gamepad);
+        slide = new Drivetrain(Drivetrain.ControlType.ARCADE, gamepad, telemetry);
         parts.add(slide);
     }
 

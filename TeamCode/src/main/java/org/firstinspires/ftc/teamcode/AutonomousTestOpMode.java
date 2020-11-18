@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
@@ -68,10 +69,7 @@ public class AutonomousTestOpMode extends OpMode {
 		robot.setSlideGroup(hardwareMap.get(DcMotor.class, "sMotor"));
 		robot.setArmMotor(hardwareMap.get(DcMotor.class, "waMotor"));
 		robot.setShooter(hardwareMap.get(DcMotor.class, "firstFlywheel"));
-		robot.setIntake(hardwareMap.get(DcMotor.class, "intakeMotor"));
 		robot.setGrabber(hardwareMap.get(Servo.class, "wgServo"));
-		robot.addElevator(hardwareMap.get(CRServo.class, "elevatorServo"));
-		robot.addWacker(hardwareMap.get(Servo.class, "servoWacker"));
 
 		//vuforia things:
 		webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
@@ -180,9 +178,9 @@ public class AutonomousTestOpMode extends OpMode {
 
 		// Next, translate the camera lens to where it is on the robot.
 		// In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
-		final float CAMERA_FORWARD_DISPLACEMENT  = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
-		final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
-		final float CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
+		final float CAMERA_FORWARD_DISPLACEMENT  = 5.5f * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
+		final float CAMERA_VERTICAL_DISPLACEMENT = 9.5f * mmPerInch;   // eg: Camera is 8 Inches above ground
+		final float CAMERA_LEFT_DISPLACEMENT     = 7.0f	* mmPerInch;     // eg: Camera is ON the robot's center line
 
 		OpenGLMatrix robotFromCamera = OpenGLMatrix
 				.translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
@@ -208,6 +206,40 @@ public class AutonomousTestOpMode extends OpMode {
 		targetsUltimateGoal.activate();
 	}
 
+	@Override
+	public void init_loop() {
+		//vuforia stuff
+		targetVisible = false;
+		VectorF translation = null;
+		Orientation rotation = null;
+		for (VuforiaTrackable trackable : allTrackables) {
+			if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
+				telemetry.addData("Visible Target", trackable.getName());
+				targetVisible = true;
+
+				// getUpdatedRobotLocation() will return null if no new information is available since
+				// the last time that call was made, or if the trackable is not currently visible.
+				OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
+				if (robotLocationTransform != null) {
+					lastLocation = robotLocationTransform;
+				}
+				break;
+			}
+		}
+		if (targetVisible) {
+			// express position (translation) of robot in inches.
+			translation = lastLocation.getTranslation();
+			telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+					translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+
+			// express the rotation of the robot in degrees.
+			rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+			telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+		}
+		else {
+			telemetry.addData("Visible Target", "none");
+		}
+	}
 
 	@Override
 	public void loop() {
@@ -246,12 +278,13 @@ public class AutonomousTestOpMode extends OpMode {
 
 
 
-		while (!isDone) {
-			robot.move(0, 0);
-			if (targetVisible) { //giving the position based on vuforia variables.
-				robot.setPosition(translation.get(0), translation.get(1), rotation.thirdAngle);
-			}
-			isDone = true;
+		robot.update();
+		robot.move(0, 0);
+		if (targetVisible) { //giving the position based on vuforia variables.
+			robot.setPosition(translation.get(0), translation.get(1), rotation.thirdAngle);
+		} else {
+			robot.setPosition(200, -500, 0);
 		}
+		isDone = true;
 	}
 }

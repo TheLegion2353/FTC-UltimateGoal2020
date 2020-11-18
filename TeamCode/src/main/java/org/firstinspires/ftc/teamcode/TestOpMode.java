@@ -23,6 +23,7 @@ public class TestOpMode extends OpMode {
         robot.setIntake(hardwareMap.get(DcMotor.class, "intakeMotor"));
         robot.setGrabber(hardwareMap.get(Servo.class, "wgServo"));
         robot.addElevator(hardwareMap.get(CRServo.class, "elevatorServo"));
+        robot.addWacker(hardwareMap.get(Servo.class, "servoWacker"));
     }
 
     @Override

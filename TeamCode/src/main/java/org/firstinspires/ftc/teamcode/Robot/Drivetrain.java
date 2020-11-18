@@ -13,12 +13,10 @@ public class Drivetrain extends RobotPart {
 	private PID anglePIDController = null;
 	private PID xPIDController = null;
 	private PID yPIDController = null;
-	int lastXPosition = 0;
-	int lastYPosition = 0;
-	int xPosition = 0;
-	int yPosition = 0;
-	int targetX = 0;
-	int targetY = 0;
+	double xPosition = 0;
+	double yPosition = 0;
+	double targetX = 0;
+	double targetY = 0;
 	double angle = 0;
 	double targetAngle = 0;
 
@@ -51,11 +49,11 @@ public class Drivetrain extends RobotPart {
 		}
 	}
 
-	public int[] getPosition() {
-		return new int[] {xPosition, yPosition, (int)(angle + 0.5)};
+	public double[] getPosition() {
+		return new double[] {xPosition, yPosition, (angle + 0.5)};
 	}
 
-	public void move(int x, int y) {
+	public void move(double x, double y) {
 		targetX = x;
 		targetY = y;
 	}
@@ -64,13 +62,13 @@ public class Drivetrain extends RobotPart {
 		targetAngle = a;
 	}
 
-	public void move(int x, int y, double a) {
+	public void move(double x, double y, double a) {
 		targetX = x;
 		targetY = y;
 		targetAngle = a;
 	}
 
-	public void setPosition(int x, int y, double a) {
+	public void setPosition(double x, double y, double a) {
 		xPosition = x;
 		yPosition = y;
 		angle = a;

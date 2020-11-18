@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.Camera;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -22,8 +23,9 @@ public class Robot {
     private Gamepad gamepad = null;
     private Telemetry telemetry = null;
     private ServoWacker whacker = null;
-    int xPosition = 0;
-    int yPosition = 0;
+    double xPosition = 0; //inches
+    double yPosition = 0;
+    double angle = 0;
 
     public Robot(Gamepad gp, Telemetry t) {
         telemetry = t;
@@ -49,6 +51,8 @@ public class Robot {
         for (RobotPart part : parts) {
             part.update();
         }
+
+        slide.setPosition(x, y, a);
 
         if (shooter != null) {
             shooter.update();
@@ -107,5 +111,11 @@ public class Robot {
 
     public void addWacker(Servo servo) {
         whacker = new ServoWacker(gamepad, servo);
+    }
+
+    public void setPosition(double x, double y, double a) {
+        xPosition = x;
+        yPosition = y;
+        angle = a;
     }
 }

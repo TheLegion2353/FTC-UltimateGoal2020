@@ -13,6 +13,8 @@ public class Drivetrain extends RobotPart {
 	private PID anglePIDController = null;
 	private PID xPIDController = null;
 	private PID yPIDController = null;
+	int lastXPosition = 0;
+	int lastYPosition = 0;
 	int xPosition = 0;
 	int yPosition = 0;
 	int targetX = 0;
@@ -76,29 +78,36 @@ public class Drivetrain extends RobotPart {
 
 	@Override
 	protected void autonomousUpdate() {
+		//BEFORE DECLARING THIS CODE TO NOT WORK, REMEMBER TO TEST THE PID VALUES!
+		//relying on navigation targets for now.  Will add independent odometry later.
 		double referenceAngle = angleToTarget() - angle;
-		double deltax = targetX - xPosition;
+		double deltax = targetX - xPosition; //temporarily store the x and y components to find the distance.
 		double deltay = targetY - yPosition;
-		xPosition = ;
-		yPosition = ;
+		double distance = Math.pow(Math.pow(deltax, 2) + Math.pow(deltay, 2), 1/2);
+		deltax = Math.sin(referenceAngle)*distance;
+		deltay = Math.cos(referenceAngle)*distance;
+		//basically, these lines above compose a x and y value that needs to be moved relative to the current angle and the current position as well as the current angle.
+
+
+		//---ANGLE---
+		//This block of code controls the angle and is independent of the position block of code (below this block).  This code isn't really efficient.
 		if (Math.abs(referenceAngle) < 1) {
 			anglePIDController.setSetPoint(angleToTarget());
 			double anglePower = anglePIDController.PIDLoop(angle);
-			if (anglePower > 1) {
-				anglePower = 1;
-			} else if (anglePower < -1) {
-				anglePower = -1;
-			}
-			leftGroup.setSpeed(anglePower);
+			leftGroup.setSpeed(anglePower); //these two lines are overwritten by the next block of code.
 			rightGroup.setSpeed(-anglePower);
-		} else {
-			xPIDController.setSetPoint(targetX);
-			yPIDController.setSetPoint(targetY);
-			double xPower = xPIDController.PIDLoop(xPosition);
-			double yPower = yPIDController.PIDLoop(yPosition);
-			leftGroup.setSpeed((xPower + yPower) / 2);
-			rightGroup.setSpeed((xPower + yPower) / 2);
 		}
+
+
+		//---POSITION---
+		//getting the position right;  This block of code controls the position and is independent of the angle block of code (above this block).
+		xPIDController.setSetPoint(0); //the process variable is delta x and delta y, so this needs to be zero as we want to get close to the target position
+		yPIDController.setSetPoint(0);
+		double xPower = xPIDController.PIDLoop(deltax);
+		double yPower = yPIDController.PIDLoop(deltay);
+		leftGroup.setSpeed(yPower);
+		rightGroup.setSpeed(yPower);
+		centerGroup.setSpeed(xPower);
 	}
 
 	@Override
@@ -132,9 +141,9 @@ public class Drivetrain extends RobotPart {
 	}
 
 	private double angleToTarget() {
-		double deltax = xPosition - targetX;
-		double deltay = yPosition - targetY;
-		return Math.toDegrees(Math.atan2(deltay, deltax)) + 90;
+		double dx = xPosition - targetX;
+		double dy = yPosition - targetY;
+		return Math.toDegrees(Math.atan2(dy, dx)) + 90;
 	}
 
 	public enum ControlType {

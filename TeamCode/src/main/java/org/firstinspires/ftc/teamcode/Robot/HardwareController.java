@@ -46,6 +46,14 @@ public class HardwareController {
 		}
 	}
 
+	public int getMotorPos() {
+		int avrgPos = 0;
+		for (DcMotor m : motors) {
+			avrgPos += m.getCurrentPosition();
+		}
+		avrgPos /= motors.size();
+		return avrgPos;
+	}
 	public void addMotor(DcMotor motor) {
 		motors.add(motor);
 	}

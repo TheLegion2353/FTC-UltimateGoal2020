@@ -21,7 +21,7 @@ public class Robot {
     private ElapsedTime clock = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private Gamepad gamepad = null;
     private Telemetry telemetry = null;
-    private ServoWacker wacker = null;
+    private ServoWacker whacker = null;
     int xPosition = 0;
     int yPosition = 0;
 
@@ -66,8 +66,8 @@ public class Robot {
             elevator.update();
         }
 
-        if (wacker != null) {
-            wacker.update();
+        if (whacker != null) {
+            whacker.update();
         }
 
         clock.reset();
@@ -106,6 +106,6 @@ public class Robot {
     }
 
     public void addWacker(Servo servo) {
-        wacker = new ServoWacker(gamepad, servo);
+        whacker = new ServoWacker(gamepad, servo);
     }
 }

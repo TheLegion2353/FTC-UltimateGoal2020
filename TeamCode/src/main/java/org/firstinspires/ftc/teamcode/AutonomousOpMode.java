@@ -238,6 +238,7 @@ public class AutonomousOpMode extends OpMode {
 	public void loop() {
 		vuforiaLoop();
 		robot.update();
+		robot.setPosition(0, 0, 0); //starting position
 		double initialX;
 		double initialY;
 		if (path == AutoPath.A) {

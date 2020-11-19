@@ -68,10 +68,6 @@ public class Drivetrain extends RobotPart {
 		}
 	}
 
-	public double[] getPosition() {
-		return new double[] {xPosition, yPosition, (angle + 0.5)};
-	}
-
 	public boolean move(double x, double y) {
 		targetX = x;
 		targetY = y;
@@ -102,8 +98,14 @@ public class Drivetrain extends RobotPart {
 		//relying on navigation targets for now.  Will add independent odometry later.
 		if (needManualOdometry) {
 			//assuming the angle remains constant.
-			targetY += ((leftGroup.getPos() - rightGroup.getPos()) / (double)2) - lastEncoderY;
-			targetX += centerGroup.getPos() - lastEncoderX;
+			double deltaYPrime = ((leftGroup.getPos() - rightGroup.getPos()) / (double)2) - lastEncoderY;
+			double deltaXPrime = centerGroup.getPos() - lastEncoderX;
+			double dist = Math.pow(Math.pow(deltaXPrime, 2) + Math.pow(deltaYPrime, 2), (double)1/2);
+			double angle = 0;
+			double deltaY = Math.sin(Math.toRadians(angle)) * dist;
+			double deltaX = Math.cos(Math.toRadians(angle)) * dist;
+			yPosition += deltaY;
+			xPosition += deltaX;
 		}
 		double referenceAngle = angleToTarget() - angle;
 		double deltax = targetX - xPosition; //temporarily store the x and y components to find the distance.
@@ -113,16 +115,14 @@ public class Drivetrain extends RobotPart {
 		deltax = Math.cos(Math.toRadians(referenceAngle)) * distance;
 		//basically, these lines above compose a x and y value that needs to be moved relative to the current angle and the current position.
 
-		if (!needManualOdometry) { //don't change the angle if the position needs to be manually calculated.
-			//---ANGLE---
-			//This block of code controls the angle and is independent of the position block of code (below this block).  This code isn't really efficient.
-			/*if (Math.abs(referenceAngle) < 1) {
-				anglePIDController.setSetPoint(angleToTarget());
-				double anglePower = anglePIDController.PIDLoop(angle);
-				leftGroup.setSpeed(anglePower); //these two lines are overwritten by the next block of code.
-				rightGroup.setSpeed(-anglePower);
-			}*/
-		}
+		//---ANGLE---
+		//This block of code controls the angle and is independent of the position block of code (below this block).  This code isn't really efficient.
+		/*if (Math.abs(referenceAngle) < 1) {
+			anglePIDController.setSetPoint(angleToTarget());
+			double anglePower = anglePIDController.PIDLoop(angle);
+			leftGroup.setSpeed(anglePower); //these two lines are overwritten by the next block of code.
+			rightGroup.setSpeed(-anglePower);
+		}*/
 
 		//---POSITION---
 		//getting the position right;  This block of code controls the position and is independent of the angle block of code (above this block).

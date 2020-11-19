@@ -33,7 +33,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
 public class AutonomousOpMode extends OpMode {
 	Robot robot = null;
 	AutoPath path = null;
-
+	double wobbleX;
+	double wobbleY;
 	//TensorFlow related things:
 	private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
 	private static final String LABEL_FIRST_ELEMENT = "Quad";
@@ -232,30 +233,31 @@ public class AutonomousOpMode extends OpMode {
 	public void init_loop() {
 		vuforiaLoop();
 		TFLoop();
+		robot.setPosition(-28.3, -70.0, 0); //starting position
+	}
+
+	@Override
+	public void start() {
+		robot.setPosition(-28.3, 70.0, 0); //starting position
+		vuforiaLoop();
+		robot.update();
+		if (path == AutoPath.A) {
+			wobbleX = -35;
+			wobbleY = -43.5;
+		} else if (path == AutoPath.B) {
+			wobbleX = 0;
+			wobbleY = 0;
+		} else { // if C or neither A, B, nor C.
+			wobbleX = 0;
+			wobbleY = 0;
+		}
 	}
 
 	@Override
 	public void loop() {
 		vuforiaLoop();
 		robot.update();
-		robot.setPosition(0, 0, 0); //starting position
-		double initialX;
-		double initialY;
-		if (path == AutoPath.A) {
-			initialX = 0;
-			initialY = 0;
-		} else if (path == AutoPath.B) {
-			initialX = 0;
-			initialY = 0;
-		} else { // if C or neither A, B, nor C.
-			initialX = 0;
-			initialY = 0;
-		}
-		while (robot.move(initialX, initialY)) {
-			vuforiaLoop();
-			robot.update();
-		}
-		requestOpModeStop(); //stops the op mode as if the stop button was pressed. Calls stop() in the process.
+		robot.move(1050 / mmPerInch, -1050 / mmPerInch, 90);
 	}
 
 	@Override
@@ -301,7 +303,7 @@ public class AutonomousOpMode extends OpMode {
 		}
 
 		if (targetVisible) { //giving the position based on vuforia variables.
-			robot.setPosition(translation.get(0), translation.get(1), rotation.thirdAngle);
+			robot.setPosition(translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, rotation.thirdAngle);
 		}
 	}
 

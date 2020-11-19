@@ -30,7 +30,7 @@ public class Drivetrain extends RobotPart {
 	public Drivetrain(ControlType ct, Gamepad gp, Telemetry t) {
 		super(gp);
 		telemetry = t;
-		anglePIDController = new PID(0.001, 0, 0,0);
+		anglePIDController = new PID(0.01, 0.001, 0,0);
 		xPIDController = new PID(0.001, 0, 0, 0);
 		yPIDController = new PID(0.001, 0, 0, 0);
 		control = ct;
@@ -97,15 +97,20 @@ public class Drivetrain extends RobotPart {
 	protected void autonomousUpdate() {
 		//relying on navigation targets for now.  Will add independent odometry later.
 		if (needManualOdometry) {
+			/*
 			//assuming the angle remains constant.
-			double deltaYPrime = ((leftGroup.getPos() - rightGroup.getPos()) / (double)2) - lastEncoderY;
-			double deltaXPrime = centerGroup.getPos() - lastEncoderX;
+			double deltaYPrime = (((leftGroup.getPos() - rightGroup.getPos()) / (double)2) - lastEncoderY) / (560 * 2 * 1.772 * Math.PI);
+			double deltaXPrime = (centerGroup.getPos() - lastEncoderX) / (560 * 2 * 1.772 * Math.PI);
 			double dist = Math.pow(Math.pow(deltaXPrime, 2) + Math.pow(deltaYPrime, 2), (double)1/2);
-			double angle = 0;
-			double deltaY = Math.sin(Math.toRadians(angle)) * dist;
-			double deltaX = Math.cos(Math.toRadians(angle)) * dist;
-			yPosition += deltaY;
-			xPosition += deltaX;
+			double f = deltaXPrime/Math.tan(Math.toRadians(angle)) - deltaYPrime;
+			double deltaY = Math.sin(Math.toRadians(angle)) * f;
+			double deltaX = Math.cos(Math.toRadians(angle)) * f;
+			yPosition -= deltaY;
+			xPosition -= deltaX;
+			telemetry.addData("DX: ", deltaX);
+			telemetry.addData("DY: ", deltaY);
+			*/
+
 		}
 		double referenceAngle = angleToTarget() - angle;
 		double deltax = targetX - xPosition; //temporarily store the x and y components to find the distance.
@@ -117,12 +122,12 @@ public class Drivetrain extends RobotPart {
 
 		//---ANGLE---
 		//This block of code controls the angle and is independent of the position block of code (below this block).  This code isn't really efficient.
-		/*if (Math.abs(referenceAngle) < 1) {
-			anglePIDController.setSetPoint(angleToTarget());
-			double anglePower = anglePIDController.PIDLoop(angle);
-			leftGroup.setSpeed(anglePower); //these two lines are overwritten by the next block of code.
-			rightGroup.setSpeed(-anglePower);
-		}*/
+
+		anglePIDController.setSetPoint(angleToTarget());
+		double anglePower = anglePIDController.PIDLoop(angle);
+		leftGroup.setSpeed(anglePower); //these two lines are overwritten by the next block of code.
+		rightGroup.setSpeed(-anglePower);
+
 
 		//---POSITION---
 		//getting the position right;  This block of code controls the position and is independent of the angle block of code (above this block).
@@ -133,8 +138,10 @@ public class Drivetrain extends RobotPart {
 		leftGroup.setSpeed(yPower);
 		rightGroup.setSpeed(-yPower);
 		centerGroup.setSpeed(xPower);
-		telemetry.addData("Process Var x: ", xPower);
-		telemetry.addData("delta x: ", deltax);
+		telemetry.addData("Position X: ", xPosition);
+		telemetry.addData("Position Y: ", yPosition);
+		telemetry.addData("Target X: ", targetX);
+		telemetry.addData("Target Y: ", targetY);
 		needManualOdometry = true; //set flag to true.  If the setPosition() is called, signifying a definitive position is known, needManualOdometry will be set back to false.
 		lastEncoderX = (leftGroup.getPos() - rightGroup.getPos()) / (double)2; //subtracted because they have different signs as the motors face opposite directions.
 		lastEncoderY = (centerGroup.getPos());

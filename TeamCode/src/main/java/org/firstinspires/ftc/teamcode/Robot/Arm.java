@@ -57,7 +57,7 @@ public class Arm extends RobotPart {
                 position = -60;
                 break;
             case 2:
-                position = -410;
+                position = -435;
                 break;
 
         }

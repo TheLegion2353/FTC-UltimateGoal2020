@@ -29,7 +29,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
 @Autonomous(name="Test Auto OLD", group="Autonomous")
-@Disabled
+
 public class AutonomousTestOpMode extends OpMode {
 	Robot robot = null;
 	boolean isDone = false;
@@ -285,7 +285,7 @@ public class AutonomousTestOpMode extends OpMode {
 		if (targetVisible) { //giving the position based on vuforia variables.
 			robot.setPosition(translation.get(0), translation.get(1), rotation.thirdAngle);
 		} else {
-			robot.setPosition(200, -500, 0);
+
 		}
 		isDone = true;
 	}

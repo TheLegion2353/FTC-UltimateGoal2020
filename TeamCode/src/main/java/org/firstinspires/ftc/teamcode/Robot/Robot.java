@@ -45,6 +45,10 @@ public class Robot {
         return slide.move(x, y);
     }
 
+    public boolean move(double x, double y, double a) {
+        return slide.move(x, y, a);
+    }
+
     public void update() {
         double time = (double)clock.time(TimeUnit.MILLISECONDS) / 1000.0;
 

@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -17,6 +16,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.Robot.Robot;
 
 import java.util.ArrayList;
@@ -28,13 +29,20 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
-@Autonomous(name="Test Auto OLD", group="Autonomous")
-@Disabled
-public class AutonomousTestOpMode extends OpMode {
+@Autonomous(name="Autonomous", group="Autonomous")
+public class AutonomousOpMode extends OpMode {
 	Robot robot = null;
-	boolean isDone = false;
+	AutoPath path = null;
+
+
+	//TensorFlow related things:
+	private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
+	private static final String LABEL_FIRST_ELEMENT = "Quad";
+	private static final String LABEL_SECOND_ELEMENT = "Single";
+	private TFObjectDetector tfod;
 
 	// Vuforia Related Things:
+	VuforiaTrackables targetsUltimateGoal;
 	private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
 	private static final boolean PHONE_IS_PORTRAIT = false  ;
 	private static final String VUFORIA_KEY =
@@ -65,7 +73,6 @@ public class AutonomousTestOpMode extends OpMode {
 	@Override
 	public void init() {
 		robot = new Robot(null, telemetry);
-		isDone = false;
 		robot.setLeftGroup(hardwareMap.get(DcMotor.class, "lMotor"));
 		robot.setRightGroup(hardwareMap.get(DcMotor.class, "rMotor"));
 		robot.setSlideGroup(hardwareMap.get(DcMotor.class, "sMotor"));
@@ -99,7 +106,7 @@ public class AutonomousTestOpMode extends OpMode {
 
 		// Load the data sets for the trackable objects. These particular data
 		// sets are stored in the 'assets' part of our application.
-		VuforiaTrackables targetsUltimateGoal = this.vuforia.loadTrackablesFromAsset("UltimateGoal");
+		targetsUltimateGoal = this.vuforia.loadTrackablesFromAsset("UltimateGoal");
 		VuforiaTrackable blueTowerGoalTarget = targetsUltimateGoal.get(0);
 		blueTowerGoalTarget.setName("Blue Tower Goal Target");
 		VuforiaTrackable redTowerGoalTarget = targetsUltimateGoal.get(1);
@@ -206,46 +213,45 @@ public class AutonomousTestOpMode extends OpMode {
 		// Tap the preview window to receive a fresh image.
 
 		targetsUltimateGoal.activate();
+		initTfod();
+		if (tfod != null) {
+			tfod.activate();
+
+			// The TensorFlow software will scale the input images from the camera to a lower resolution.
+			// This can result in lower detection accuracy at longer distances (> 55cm or 22").
+			// If your target is at distance greater than 50 cm (20") you can adjust the magnification value
+			// to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
+			// should be set to the value of the images used to create the TensorFlow Object Detection model
+			// (typically 1.78 or 16/9).
+
+			// Uncomment the following line if you want to adjust the magnification and/or the aspect ratio of the input images.
+			//tfod.setZoom(2.5, 1.78);
+		}
 	}
 
 	@Override
 	public void init_loop() {
-		//vuforia stuff
-		targetVisible = false;
-		VectorF translation = null;
-		Orientation rotation = null;
-		for (VuforiaTrackable trackable : allTrackables) {
-			if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-				telemetry.addData("Visible Target", trackable.getName());
-				targetVisible = true;
+		vuforiaLoop();
 
-				// getUpdatedRobotLocation() will return null if no new information is available since
-				// the last time that call was made, or if the trackable is not currently visible.
-				OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
-				if (robotLocationTransform != null) {
-					lastLocation = robotLocationTransform;
-				}
-				break;
-			}
-		}
-		if (targetVisible) {
-			// express position (translation) of robot in inches.
-			translation = lastLocation.getTranslation();
-			telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-					translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-
-			// express the rotation of the robot in degrees.
-			rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
-			telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-		}
-		else {
-			telemetry.addData("Visible Target", "none");
-		}
+		TFLoop();
 	}
 
 	@Override
 	public void loop() {
+		vuforiaLoop();
+		robot.update();
+		robot.move(0, 0);
+	}
 
+	@Override
+	public void stop() {
+		if (tfod != null) {
+			tfod.shutdown();
+		}
+		targetsUltimateGoal.deactivate();
+	}
+
+	private void vuforiaLoop() {
 		//vuforia stuff
 		targetVisible = false;
 		VectorF translation = null;
@@ -264,6 +270,7 @@ public class AutonomousTestOpMode extends OpMode {
 				break;
 			}
 		}
+
 		if (targetVisible) {
 			// express position (translation) of robot in inches.
 			translation = lastLocation.getTranslation();
@@ -278,15 +285,52 @@ public class AutonomousTestOpMode extends OpMode {
 			telemetry.addData("Visible Target", "none");
 		}
 
-
-
-		robot.update();
-		robot.move(0, 0);
 		if (targetVisible) { //giving the position based on vuforia variables.
 			robot.setPosition(translation.get(0), translation.get(1), rotation.thirdAngle);
-		} else {
-			robot.setPosition(200, -500, 0);
 		}
-		isDone = true;
+	}
+
+	private void TFLoop() {
+		//TensorFlow detection
+		if (tfod != null) {
+			// getUpdatedRecognitions() will return null if no new information is available since
+			// the last time that call was made.
+			List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+			if (updatedRecognitions != null) {
+				telemetry.addData("# Object Detected", updatedRecognitions.size());
+				// step through the list of recognitions and display boundary info.
+				int i = 0;
+				for (Recognition recognition : updatedRecognitions) {
+					telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+					if (recognition.getLabel() == "Quad") {
+						path = AutoPath.A;
+					} else if (recognition.getLabel() == "Single") {
+						path = AutoPath.B;
+					} else {
+						path = AutoPath.C;
+					}
+					telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+							recognition.getLeft(), recognition.getTop());
+					telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+							recognition.getRight(), recognition.getBottom());
+				}
+				telemetry.update();
+			}
+		}
+	}
+
+	private void initTfod() { //initialize TensorFlow
+		int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+				"tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+		TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+		tfodParameters.minResultConfidence = 0.8f;
+		tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+		tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+	}
+
+	private enum AutoPath {
+		A,
+		B,
+		C
 	}
 }

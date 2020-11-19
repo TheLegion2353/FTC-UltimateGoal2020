@@ -37,9 +37,9 @@ public class Drivetrain extends RobotPart {
 
 	public Drivetrain(ControlType ct, Gamepad gp) {
 		super(gp);
-		anglePIDController = new PID(0.1, 0, 0,0);
-		xPIDController = new PID(0.1, 0, 0, 0);
-		yPIDController = new PID(0.1, 0, 0, 0);
+		anglePIDController = new PID(0.001, 0, 0,0);
+		xPIDController = new PID(0.001, 0, 0, 0);
+		yPIDController = new PID(0.001, 0, 0, 0);
 		control = ct;
 		leftGroup = new HardwareController();
 		rightGroup = new HardwareController();

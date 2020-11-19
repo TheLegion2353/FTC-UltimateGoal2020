@@ -41,8 +41,8 @@ public class Robot {
         parts.add(slide);
     }
 
-    public void move(int x, int y) {
-        slide.move(x, y);
+    public boolean move(double x, double y) {
+        return slide.move(x, y);
     }
 
     public void update() {

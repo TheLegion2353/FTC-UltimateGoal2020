@@ -34,7 +34,6 @@ public class AutonomousOpMode extends OpMode {
 	Robot robot = null;
 	AutoPath path = null;
 
-
 	//TensorFlow related things:
 	private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
 	private static final String LABEL_FIRST_ELEMENT = "Quad";
@@ -232,7 +231,6 @@ public class AutonomousOpMode extends OpMode {
 	@Override
 	public void init_loop() {
 		vuforiaLoop();
-
 		TFLoop();
 	}
 
@@ -240,7 +238,23 @@ public class AutonomousOpMode extends OpMode {
 	public void loop() {
 		vuforiaLoop();
 		robot.update();
-		robot.move(0, 0);
+		double initialX;
+		double initialY;
+		if (path == AutoPath.A) {
+			initialX = 0;
+			initialY = 0;
+		} else if (path == AutoPath.B) {
+			initialX = 0;
+			initialY = 0;
+		} else { // if C or neither A, B, nor C.
+			initialX = 0;
+			initialY = 0;
+		}
+		while (robot.move(initialX, initialY)) {
+			vuforiaLoop();
+			robot.update();
+		}
+		requestOpModeStop(); //stops the op mode as if the stop button was pressed. Calls stop() in the process.
 	}
 
 	@Override
@@ -300,6 +314,7 @@ public class AutonomousOpMode extends OpMode {
 				telemetry.addData("# Object Detected", updatedRecognitions.size());
 				// step through the list of recognitions and display boundary info.
 				int i = 0;
+				path = AutoPath.C;
 				for (Recognition recognition : updatedRecognitions) {
 					telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
 					if (recognition.getLabel() == "Quad") {
@@ -316,6 +331,8 @@ public class AutonomousOpMode extends OpMode {
 				}
 				telemetry.update();
 			}
+		} else {
+			path = AutoPath.C;
 		}
 	}
 

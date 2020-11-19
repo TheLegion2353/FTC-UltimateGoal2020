@@ -30,9 +30,9 @@ public class Drivetrain extends RobotPart {
 	public Drivetrain(ControlType ct, Gamepad gp, Telemetry t) {
 		super(gp);
 		telemetry = t;
-		anglePIDController = new PID(0.01, 0.001, 0,0);
-		xPIDController = new PID(0.001, 0, 0, 0);
-		yPIDController = new PID(0.001, 0, 0, 0);
+		anglePIDController = new PID(0.0005, 0, 0,0);
+		xPIDController = new PID(0.00075, 0, 0.000025, 0.00001);
+		yPIDController = new PID(0.00075, 0, 0.000025, 0.00001);
 		control = ct;
 		leftGroup = new HardwareController();
 		rightGroup = new HardwareController();
@@ -71,19 +71,19 @@ public class Drivetrain extends RobotPart {
 	public boolean move(double x, double y) {
 		targetX = x;
 		targetY = y;
-		return (Math.abs(targetX - xPosition) < 1 && Math.abs(targetY - yPosition) < 1);
+		return (Math.abs(targetX - xPosition) < 100 && Math.abs(targetY - yPosition) < 100);
 	}
 
 	public boolean moveAngle(double a) {
 		targetAngle = a;
-		return (Math.abs(targetAngle - angle) < 1);
+		return (Math.abs(targetAngle - angle) < 100);
 	}
 
 	public boolean move(double x, double y, double a) {
 		targetX = x;
 		targetY = y;
 		targetAngle = a;
-		return (Math.abs(targetX - xPosition) < 1 && Math.abs(targetY - yPosition) < 1 && Math.abs(targetAngle - angle) < 1);
+		return (Math.abs(targetX - xPosition) < 100 && Math.abs(targetY - yPosition) < 100 && Math.abs(targetAngle - angle) < 100);
 	}
 
 	public void setPosition(double x, double y, double a) {

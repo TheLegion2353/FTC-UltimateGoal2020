@@ -35,6 +35,8 @@ public class AutonomousOpMode extends OpMode {
 	AutoPath path = null;
 	double wobbleX;
 	double wobbleY;
+	double wobbleAngle;
+	int currentTask = 0;
 	//TensorFlow related things:
 	private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
 	private static final String LABEL_FIRST_ELEMENT = "Quad";
@@ -233,17 +235,19 @@ public class AutonomousOpMode extends OpMode {
 	public void init_loop() {
 		vuforiaLoop();
 		TFLoop();
-		robot.setPosition(-28.3, -70.0, 0); //starting position
+		robot.setPosition(-28.3 * mmPerInch, -70.0 * mmPerInch, 0); //starting position
 	}
 
 	@Override
 	public void start() {
-		robot.setPosition(-28.3, 70.0, 0); //starting position
+		robot.setPosition(-28.3 * mmPerInch, 70.0 * mmPerInch, 0); //starting position
 		vuforiaLoop();
 		robot.update();
 		if (path == AutoPath.A) {
-			wobbleX = -35;
-			wobbleY = -43.5;
+			wobbleX = 1000;
+			wobbleY = -1600;
+			wobbleAngle = 61; //119
+
 		} else if (path == AutoPath.B) {
 			wobbleX = 0;
 			wobbleY = 0;
@@ -257,7 +261,13 @@ public class AutonomousOpMode extends OpMode {
 	public void loop() {
 		vuforiaLoop();
 		robot.update();
-		robot.move(1050 / mmPerInch, -1050 / mmPerInch, 90);
+		if (currentTask == 0) { //move to common spot
+			if (robot.move(1050, -1050, 90)) {
+				currentTask = 1;
+			}
+		} else if (currentTask == 1) {
+			robot.move(wobbleX, wobbleY, wobbleAngle);
+		}
 	}
 
 	@Override
@@ -303,7 +313,7 @@ public class AutonomousOpMode extends OpMode {
 		}
 
 		if (targetVisible) { //giving the position based on vuforia variables.
-			robot.setPosition(translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, rotation.thirdAngle);
+			robot.setPosition(translation.get(0), translation.get(1), rotation.thirdAngle);
 		}
 	}
 
@@ -317,15 +327,15 @@ public class AutonomousOpMode extends OpMode {
 				telemetry.addData("# Object Detected", updatedRecognitions.size());
 				// step through the list of recognitions and display boundary info.
 				int i = 0;
-				path = AutoPath.C;
+				path = AutoPath.A;
 				for (Recognition recognition : updatedRecognitions) {
 					telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
 					if (recognition.getLabel() == "Quad") {
-						path = AutoPath.A;
+						path = AutoPath.C;
 					} else if (recognition.getLabel() == "Single") {
 						path = AutoPath.B;
 					} else {
-						path = AutoPath.C;
+						path = AutoPath.A;
 					}
 					telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
 							recognition.getLeft(), recognition.getTop());
@@ -335,7 +345,7 @@ public class AutonomousOpMode extends OpMode {
 				telemetry.update();
 			}
 		} else {
-			path = AutoPath.C;
+			path = AutoPath.A;
 		}
 	}
 

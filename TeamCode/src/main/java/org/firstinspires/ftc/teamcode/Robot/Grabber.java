@@ -35,4 +35,8 @@ public class Grabber extends RobotPart{
 	protected void autonomousUpdate() {
 
 	}
+
+	public void setGrab(int grab) {
+		servo.setPosition(grab);
+	}
 }

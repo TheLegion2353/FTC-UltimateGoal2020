@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Robot {
     ArrayList<RobotPart> parts = new ArrayList<RobotPart>();
+    private Arm arm = null;
     private Drivetrain slide = null;
     private Grabber grabber = null;
     private Shooter shooter = null;
@@ -56,6 +57,9 @@ public class Robot {
             part.update();
         }
 
+        if (arm != null) {
+            arm.update();
+        }
         if (shooter != null) {
             shooter.update();
         }
@@ -92,7 +96,7 @@ public class Robot {
     }
 
     public void setArmMotor(DcMotor m) {
-        parts.add(new Arm(gamepad, m, telemetry));
+        arm = (new Arm(gamepad, m, telemetry));
     }
 
     public void setShooter(DcMotor ... motors) {
@@ -120,5 +124,13 @@ public class Robot {
         yPosition = y;
         angle = a;
         slide.setPosition(x, y, a);
+    }
+
+    public void setArmPosition(int pos) {
+        arm.setArmPosition(pos);
+    }
+
+    public void setGrab(int grab) {
+        grabber.setGrab(grab);
     }
 }

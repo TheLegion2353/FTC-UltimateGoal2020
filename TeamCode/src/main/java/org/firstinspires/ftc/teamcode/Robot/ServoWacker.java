@@ -17,7 +17,7 @@ public class ServoWacker extends RobotPart {
 		if (gamepad.dpad_up) {
 			wacker.setPosition(1);
 		} else if (gamepad.dpad_down) {
-			wacker.setPosition(-1);
+			wacker.setPosition(0);
 		}
 	}
 

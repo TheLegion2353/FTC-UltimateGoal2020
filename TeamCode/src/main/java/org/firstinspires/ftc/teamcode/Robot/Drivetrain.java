@@ -23,6 +23,10 @@ public class Drivetrain extends RobotPart {
 	private boolean needManualOdometry = true;
 	double lastEncoderX = 0;
 	double lastEncoderY = 0;
+	boolean hasStarted = false;
+	double netPowerLeft = 0;
+	double netPowerRight = 0;
+	double netPowerCenter = 0;
 
 	private Telemetry telemetry = null;
 
@@ -30,7 +34,7 @@ public class Drivetrain extends RobotPart {
 	public Drivetrain(ControlType ct, Gamepad gp, Telemetry t) {
 		super(gp);
 		telemetry = t;
-		anglePIDController = new PID(0.0005, 0, 0,0);
+		anglePIDController = new PID(0.01, 0, 0,0);
 		xPIDController = new PID(0.00075, 0, 0.000025, 0.00001);
 		yPIDController = new PID(0.00075, 0, 0.000025, 0.00001);
 		control = ct;
@@ -41,7 +45,7 @@ public class Drivetrain extends RobotPart {
 
 	public Drivetrain(ControlType ct, Gamepad gp) {
 		super(gp);
-		anglePIDController = new PID(0.001, 0, 0,0);
+		anglePIDController = new PID(0, 0, 0,0);
 		xPIDController = new PID(0.001, 0, 0, 0);
 		yPIDController = new PID(0.001, 0, 0, 0);
 		control = ct;
@@ -95,8 +99,10 @@ public class Drivetrain extends RobotPart {
 
 	@Override
 	protected void autonomousUpdate() {
+
 		//relying on navigation targets for now.  Will add independent odometry later.
 		if (needManualOdometry) {
+			if (hasStarted == false) {
 			/*
 			//assuming the angle remains constant.
 			double deltaYPrime = (((leftGroup.getPos() - rightGroup.getPos()) / (double)2) - lastEncoderY) / (560 * 2 * 1.772 * Math.PI);
@@ -110,41 +116,54 @@ public class Drivetrain extends RobotPart {
 			telemetry.addData("DX: ", deltaX);
 			telemetry.addData("DY: ", deltaY);
 			*/
+				netPowerLeft = 1;
+				netPowerRight = -0.9;
+				netPowerCenter = 0;
+				hasStarted = true;
+			}
+		} else {
+			netPowerLeft = 0;
+			netPowerRight = 0;
+			netPowerCenter = 0;
+			double referenceAngle = angleToTarget() - angle;
+			double deltax = targetX - xPosition; //temporarily store the x and y components to find the distance.
+			double deltay = targetY - yPosition;
+			double distance = Math.pow(Math.pow(deltax, 2) + Math.pow(deltay, 2), (double) 1 / 2);
+			deltay = Math.sin(Math.toRadians(referenceAngle)) * distance; //may need to swap sine and cosine functions if the angleToTarget() function needs to return its value + 90 degrees.
+			deltax = Math.cos(Math.toRadians(referenceAngle)) * distance;
+			//basically, these lines above compose a x and y value that needs to be moved relative to the current angle and the current position.
 
+			//---ANGLE---
+			//This block of code controls the angle and is independent of the position block of code (below this block).
+
+			anglePIDController.setSetPoint(targetAngle);
+			double anglePower = -anglePIDController.PIDLoop(angle);
+			telemetry.addData("angle: ", angle);
+			telemetry.addData("angleto: ", targetAngle);
+			netPowerLeft += anglePower;
+			netPowerRight += anglePower;
+
+
+			//---POSITION---
+			//getting the position right;  This block of code controls the position and is independent of the angle block of code (above this block).
+			xPIDController.setSetPoint(0); //the process variable is delta x and delta y, so this needs to be zero as we want to get close to the target position
+			yPIDController.setSetPoint(0);
+			double xPower = xPIDController.PIDLoop(deltax);
+			double yPower = yPIDController.PIDLoop(deltay);
+			netPowerLeft += yPower;
+			netPowerRight -= yPower;
+			netPowerCenter += xPower;
+			telemetry.addData("Position X: ", xPosition);
+			telemetry.addData("Position Y: ", yPosition);
+			telemetry.addData("Target X: ", targetX);
+			telemetry.addData("Target Y: ", targetY);
+			needManualOdometry = true; //set flag to true.  If the setPosition() is called, signifying a definitive position is known, needManualOdometry will be set back to false.
+			lastEncoderX = (leftGroup.getPos() - rightGroup.getPos()) / (double) 2; //subtracted because they have different signs as the motors face opposite directions.
+			lastEncoderY = (centerGroup.getPos());
 		}
-		double referenceAngle = angleToTarget() - angle;
-		double deltax = targetX - xPosition; //temporarily store the x and y components to find the distance.
-		double deltay = targetY - yPosition;
-		double distance = Math.pow(Math.pow(deltax, 2) + Math.pow(deltay, 2), (double)1/2);
-		deltay = Math.sin(Math.toRadians(referenceAngle)) * distance; //may need to swap sine and cosine functions if the angleToTarget() function needs to return its value + 90 degrees.
-		deltax = Math.cos(Math.toRadians(referenceAngle)) * distance;
-		//basically, these lines above compose a x and y value that needs to be moved relative to the current angle and the current position.
-
-		//---ANGLE---
-		//This block of code controls the angle and is independent of the position block of code (below this block).  This code isn't really efficient.
-
-		anglePIDController.setSetPoint(angleToTarget());
-		double anglePower = anglePIDController.PIDLoop(angle);
-		leftGroup.setSpeed(anglePower); //these two lines are overwritten by the next block of code.
-		rightGroup.setSpeed(-anglePower);
-
-
-		//---POSITION---
-		//getting the position right;  This block of code controls the position and is independent of the angle block of code (above this block).
-		xPIDController.setSetPoint(0); //the process variable is delta x and delta y, so this needs to be zero as we want to get close to the target position
-		yPIDController.setSetPoint(0);
-		double xPower = xPIDController.PIDLoop(deltax);
-		double yPower = yPIDController.PIDLoop(deltay);
-		leftGroup.setSpeed(yPower);
-		rightGroup.setSpeed(-yPower);
-		centerGroup.setSpeed(xPower);
-		telemetry.addData("Position X: ", xPosition);
-		telemetry.addData("Position Y: ", yPosition);
-		telemetry.addData("Target X: ", targetX);
-		telemetry.addData("Target Y: ", targetY);
-		needManualOdometry = true; //set flag to true.  If the setPosition() is called, signifying a definitive position is known, needManualOdometry will be set back to false.
-		lastEncoderX = (leftGroup.getPos() - rightGroup.getPos()) / (double)2; //subtracted because they have different signs as the motors face opposite directions.
-		lastEncoderY = (centerGroup.getPos());
+		leftGroup.setSpeed(netPowerLeft);
+		rightGroup.setSpeed(netPowerRight);
+		centerGroup.setSpeed(netPowerCenter);
 	}
 
 	@Override

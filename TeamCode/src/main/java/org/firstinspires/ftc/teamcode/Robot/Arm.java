@@ -34,7 +34,9 @@ public class Arm extends RobotPart {
 
     @Override
     protected void autonomousUpdate() {
-
+        PIDController.setSetPoint(position);
+        double power = PIDController.PIDLoop((double)motor.getCurrentPosition());
+        motor.setPower(power);
     }
 
     @Override

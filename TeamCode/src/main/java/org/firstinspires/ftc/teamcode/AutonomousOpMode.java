@@ -36,6 +36,9 @@ public class AutonomousOpMode extends OpMode {
 	double wobbleX;
 	double wobbleY;
 	double wobbleAngle;
+	double wobbleX2 = 0;
+	double wobbleY2 = 0;
+	double wobbleAngle2 = 0;
 	int currentTask = 0;
 	//TensorFlow related things:
 	private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
@@ -229,31 +232,35 @@ public class AutonomousOpMode extends OpMode {
 			// Uncomment the following line if you want to adjust the magnification and/or the aspect ratio of the input images.
 			//tfod.setZoom(2.5, 1.78);
 		}
+		robot.setGrab(0);
+		robot.setArmPosition(-60);
 	}
 
 	@Override
 	public void init_loop() {
 		vuforiaLoop();
 		TFLoop();
-		robot.setPosition(-28.3 * mmPerInch, -70.0 * mmPerInch, 0); //starting position
+		robot.setPosition(0, 0, 0); //starting position
 	}
 
 	@Override
 	public void start() {
-		robot.setPosition(-28.3 * mmPerInch, 70.0 * mmPerInch, 0); //starting position
+		robot.setPosition(0, 0, 0); //starting position
 		vuforiaLoop();
 		robot.update();
 		if (path == AutoPath.A) {
 			wobbleX = 1000;
 			wobbleY = -1600;
-			wobbleAngle = 61; //119
+			wobbleAngle = 119; //119
 
 		} else if (path == AutoPath.B) {
-			wobbleX = 0;
-			wobbleY = 0;
+			wobbleX = 1337;
+			wobbleY = -1178;
+			wobbleAngle = 90;
 		} else { // if C or neither A, B, nor C.
-			wobbleX = 0;
-			wobbleY = 0;
+			wobbleX = 1482;
+			wobbleY = -1380;
+			wobbleAngle = 128;
 		}
 	}
 
@@ -262,11 +269,50 @@ public class AutonomousOpMode extends OpMode {
 		vuforiaLoop();
 		robot.update();
 		if (currentTask == 0) { //move to common spot
+			robot.setArmPosition(-60);
 			if (robot.move(1050, -1050, 90)) {
-				currentTask = 1;
+				currentTask++;
 			}
 		} else if (currentTask == 1) {
-			robot.move(wobbleX, wobbleY, wobbleAngle);
+			robot.setArmPosition(-435);
+			if (robot.move(wobbleX, wobbleY, wobbleAngle)) {
+				currentTask++;
+			}
+		} else if (currentTask == 2) {
+			if (path == AutoPath.B) {
+				//if (robot.move(wobbleX2, wobbleY2, wobbleAngle2)) {
+					//currentTask++;
+					//robot.setArmPosition(-60);
+					//robot.setGrab(0);
+					//if (robot.move()) {
+
+					//}
+				//} else {
+					currentTask++;
+				//}
+			} else if (path == AutoPath.C) {
+				currentTask++;
+			} else {
+				currentTask++;
+			}
+		} else if (currentTask == 3) {
+			robot.setGrab(1);
+
+			if (robot.move(1050, -1050, 110)) {
+				currentTask++;
+			}
+		} else if (currentTask == 4) {
+			robot.setArmPosition(-60);
+			robot.setGrab(0);
+			if (robot.move(1050, -1050, 90)) {
+				currentTask++;
+			}
+		} else if (currentTask == 5) {
+			if (robot.move(300, -1050, 90)) {
+				currentTask++;
+			}
+		} else if (currentTask == 6) {
+			requestOpModeStop();
 		}
 	}
 
@@ -302,7 +348,7 @@ public class AutonomousOpMode extends OpMode {
 			// express position (translation) of robot in inches.
 			translation = lastLocation.getTranslation();
 			telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-					translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+					translation.get(0), translation.get(1), translation.get(2));
 
 			// express the rotation of the robot in degrees.
 			rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);

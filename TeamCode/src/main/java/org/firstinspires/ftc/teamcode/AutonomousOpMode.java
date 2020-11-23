@@ -274,37 +274,43 @@ public class AutonomousOpMode extends OpMode {
 				currentTask++;
 			}
 		} else if (currentTask == 1) {
-			robot.setArmPosition(-435);
+			if (path == AutoPath.A) {
+				robot.setArmPosition(-435);
+			}
 			if (robot.move(wobbleX, wobbleY, wobbleAngle)) {
 				currentTask++;
 			}
 		} else if (currentTask == 2) {
 			if (path == AutoPath.B) {
-				//if (robot.move(wobbleX2, wobbleY2, wobbleAngle2)) {
-					//currentTask++;
-					//robot.setArmPosition(-60);
-					//robot.setGrab(0);
-					//if (robot.move()) {
-
-					//}
-				//} else {
+				if (robot.move(300, -1050, 90)) {
 					currentTask++;
-				//}
+					robot.setArmPosition(-60);
+				} else {
+					currentTask++;
+				}
 			} else if (path == AutoPath.C) {
 				currentTask++;
 			} else {
 				currentTask++;
 			}
 		} else if (currentTask == 3) {
-			robot.setGrab(1);
+			if (path == AutoPath.A) {
+				robot.setGrab(1);
 
-			if (robot.move(1050, -1050, 110)) {
+				if (robot.move(1050, -1050, 110)) {
+					currentTask++;
+				}
+			} else {
 				currentTask++;
 			}
 		} else if (currentTask == 4) {
-			robot.setArmPosition(-60);
-			robot.setGrab(0);
-			if (robot.move(1050, -1050, 90)) {
+			if (path == AutoPath.A) {
+				robot.setArmPosition(-60);
+				robot.setGrab(0);
+				if (robot.move(1050, -1050, 90)) {
+					currentTask++;
+				}
+			} else {
 				currentTask++;
 			}
 		} else if (currentTask == 5) {

@@ -13,7 +13,24 @@ public class PID {
     private double errorOverTime = 0;
     private ElapsedTime clock = null;
     
-    public PID(double P, double I, double D, double sp) {
+    public PID(double P, double I, double D, double sp) { //first 3 arguments are the p, i, and d constants for a PID.  They need to be experimentally determined.
+        /*
+        TUNING INSTRUCTIONS:
+        The PID values work as such.
+        The P value will give a force/voltage proportional to the distance from the set point the current position.
+        The I value will give a force/voltage for accumulated errors over time, usually small errors.  If error is small, this I value should prevent that.
+        The D value will give a force/voltage to prevent overshooting.  If the set point is far away from the current position, it may overshoot, this D value prevents this.
+
+        In terms of calculus, the P value is the proportional value, the I value is the integral, and the D value is the derivative.
+
+        The order in which the PID should be tuned is the P value, the D value, then lastly, the I value.
+        For all the constants, you need to change orders of magnitude initially then change the number itself.
+        Ex. 1 -> 0.1 -> 0.01 -> 0.05 -> 0.035
+
+        For tuning the P value, a good value will be able to hold its position with minimal oscillation.  It does not necessarily need to be at the set point, but it needs to be as close as possible without oscillation.
+        For tuning the D value, a good value will be able to dampen the movement of the controller to prevent overshooting.  It doesn't need to be as exact as the P value, but it does need to prevent the controller from overshooting.
+        For tuning the I value, a good value will be able to allow the controller to move according to small errors.  It needs to be low enough to prevent overshooting, but high enough to let the controller adjust in a timely manner.
+         */
         kP = P;
         kI = I;
         kD = D;

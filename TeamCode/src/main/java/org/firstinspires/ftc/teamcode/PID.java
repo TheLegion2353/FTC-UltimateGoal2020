@@ -46,19 +46,20 @@ public class PID {
         calcErrors(currentPos, time);
         processVar += calcP() + calcI() + calcD(time);
         previousError = error;
-        return processVar;
+        return processVar; //process variable is the voltage to be given to the motor or component.
     }
 
-    public void setSetPoint(double sp) {
+    public void setSetPoint(double sp) { //call this function in order to set the set point.
         setPoint = sp;
     }
 
-    public void updateConst(double P, double I, double D) {
+    public void updateConst(double P, double I, double D) { //update the PID constants if need be.  Usually won't need to be called.
         kP = P;
         kI = I;
         kD = D;
     }
-    
+
+    //these private functions are only used internally to calculate the different values.
     private double calcP() {
         return (error * kP);
     }

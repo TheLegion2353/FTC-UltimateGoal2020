@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -84,6 +85,7 @@ public class AutonomousOpMode extends OpMode {
 		robot.setArmMotor(hardwareMap.get(DcMotor.class, "waMotor"));
 		robot.setShooter(hardwareMap.get(DcMotor.class, "firstFlywheel"));
 		robot.setGrabber(hardwareMap.get(Servo.class, "wgServo"));
+		robot.setIMU(hardwareMap.get(BNO055IMU.class, "imu 1"));
 
 		//vuforia things:
 		webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
@@ -192,9 +194,9 @@ public class AutonomousOpMode extends OpMode {
 
 		// Next, translate the camera lens to where it is on the robot.
 		// In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
-		final float CAMERA_FORWARD_DISPLACEMENT  = -8.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
-		final float CAMERA_VERTICAL_DISPLACEMENT = 9.5f * mmPerInch;   // eg: Camera is 8 Inches above ground
-		final float CAMERA_LEFT_DISPLACEMENT     = 7.0f	* mmPerInch;     // eg: Camera is ON the robot's center line
+		final float CAMERA_FORWARD_DISPLACEMENT  = 7.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
+		final float CAMERA_VERTICAL_DISPLACEMENT = 12.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
+		final float CAMERA_LEFT_DISPLACEMENT     = 5.0f	* mmPerInch;     // eg: Camera is ON the robot's center line
 
 		OpenGLMatrix robotFromCamera = OpenGLMatrix
 				.translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
@@ -240,86 +242,100 @@ public class AutonomousOpMode extends OpMode {
 	public void init_loop() {
 		vuforiaLoop();
 		TFLoop();
-		robot.setPosition(0, 0, 0); //starting position
+		robot.setPosition(-288, -1100, 180); //starting position
 	}
 
 	@Override
 	public void start() {
-		robot.setPosition(0, 0, 0); //starting position
+		robot.setPosition(-288, -1100, 180); //starting position
 		vuforiaLoop();
 		robot.update();
 		if (path == AutoPath.A) {
-			wobbleX = 1000;
-			wobbleY = -1600;
-			wobbleAngle = 119; //119
-
+			//wobbleX = -50;
+			//wobbleY = -789;
+			//wobbleAngle = 105;
+			wobbleX = 500;
+			wobbleY = -912;
+			wobbleAngle = 96;
 		} else if (path == AutoPath.B) {
-			wobbleX = 1337;
-			wobbleY = -1178;
-			wobbleAngle = 90;
-		} else { // if C or neither A, B, nor C.
-			wobbleX = 1482;
-			wobbleY = -1380;
-			wobbleAngle = 128;
+			wobbleX = 636;
+			wobbleY = -789;
+			wobbleAngle = 84;
+		} else { // if C or neither A nor B.
+			wobbleX = 1055;
+			wobbleY = -1314;
+			wobbleAngle = 118;
 		}
 	}
 
 	@Override
 	public void loop() {
-		vuforiaLoop();
-		robot.update();
-		if (currentTask == 0) { //move to common spot
-			robot.setArmPosition(-60);
-			if (robot.move(1050, -1050, 90)) {
-				currentTask++;
-			}
-		} else if (currentTask == 1) {
-			if (path == AutoPath.A) {
-				robot.setArmPosition(-435);
-			}
-			if (robot.move(wobbleX, wobbleY, wobbleAngle)) {
-				currentTask++;
-			}
-		} else if (currentTask == 2) {
-			if (path == AutoPath.B) {
-				if (robot.move(300, -1050, 90)) {
-					currentTask++;
-					robot.setArmPosition(-60);
-				} else {
-					currentTask++;
-				}
-			} else if (path == AutoPath.C) {
-				currentTask++;
-			} else {
-				currentTask++;
-			}
-		} else if (currentTask == 3) {
-			if (path == AutoPath.A) {
-				robot.setGrab(1);
+		vuforiaLoop();  // PLEASE READ FOR TOMMOROW: the dirction for the odometry may be broken.
+		telemetry.addData("Current Task: ", currentTask);
 
-				if (robot.move(1050, -1050, 110)) {
-					currentTask++;
-				}
-			} else {
+		/*
+		robot.update();
+		if (currentTask == 0) {
+			robot.setArmPosition(-60);
+			if (robot.move(wobbleX, wobbleY, wobbleAngle)) {
+				robot.setGrab(1);
 				currentTask++;
 			}
-		} else if (currentTask == 4) {
-			if (path == AutoPath.A) {
-				robot.setArmPosition(-60);
-				robot.setGrab(0);
-				if (robot.move(1050, -1050, 90)) {
-					currentTask++;
-				}
-			} else {
-				currentTask++;
-			}
-		} else if (currentTask == 5) {
-			if (robot.move(300, -1050, 90)) {
-				currentTask++;
-			}
-		} else if (currentTask == 6) {
+		} else {
 			requestOpModeStop();
 		}
+
+		 */
+
+		if (!robot.getIsWaiting()) {
+			robot.update();
+			if (currentTask == 0) {
+				if (robot.move(-288, 1100, 180)) {
+					currentTask++;
+				}
+			} else if (currentTask == 1) {
+				if (robot.setAngle(180.0d)) {
+					currentTask++;
+				}
+			} else {
+				requestOpModeStop();
+			}
+		} else {
+			telemetry.addLine("Waiting...");
+		}
+
+		/*
+		if (!robot.getIsWaiting()) {
+			robot.update();
+			if (currentTask == 0) {
+				robot.setGrab(0);
+				robot.setArmPosition(-100);
+				if (robot.move(1050, -1000, 0)) {
+					currentTask++;
+				}
+			} else if (currentTask == 1) {
+				if (robot.setAngle(180)) {
+					currentTask++;
+				}
+			} else if (currentTask == 2) {
+				robot.wait(1000.0d);
+				currentTask++;
+			} else if (currentTask == 3) {
+				robot.setArmPosition(-480);
+				if (robot.move(1264, -940, 90)) {
+					currentTask++;
+				}
+			} else if (currentTask == 4) { //drop the wobble
+				if (robot.move(wobbleX, wobbleY, wobbleAngle)) {
+					robot.setGrab(1);
+					currentTask++;
+				}
+			} else {
+				requestOpModeStop();
+			}
+		} else {
+			telemetry.addLine("Waiting...");
+		}*/
 	}
 
 	@Override
@@ -365,7 +381,7 @@ public class AutonomousOpMode extends OpMode {
 		}
 
 		if (targetVisible) { //giving the position based on vuforia variables.
-			robot.setPosition(translation.get(0), translation.get(1), rotation.thirdAngle);
+			robot.setPosition(translation.get(0), translation.get(1), rotation.thirdAngle + 120);
 		}
 	}
 

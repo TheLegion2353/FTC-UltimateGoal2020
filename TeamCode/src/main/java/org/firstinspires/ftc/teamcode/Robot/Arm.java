@@ -7,20 +7,21 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.PID;
 
 public class Arm extends RobotPart {
-    public final double armP = 0.009;
-    public final double armI = 0.001;
-    public final double armD = 0.001;
+    public double armP = 0.009;
+    public double armI = 0.001;
+    public double armD = 0.001;
 
     private int wobbleArmPositionSetpoints = 0;
     private boolean isLBDown = false;
-    private DcMotor motor = null;
-    private PID PIDController = null;
-    private Telemetry telemetry = null;
-    double position = 0;
+    protected DcMotor motor = null;
+    protected PID PIDController = null;
+    protected Telemetry telemetry = null;
+    protected double position = 0;
 
     public Arm(Gamepad gp, DcMotor m) {
         super(gp);
         motor = m;
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         PIDController = new PID(armP, armI, armD, motor.getCurrentPosition());
     }
@@ -28,6 +29,7 @@ public class Arm extends RobotPart {
     public Arm(Gamepad gp, DcMotor m, Telemetry t) {
         super(gp);
         motor = m;
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         PIDController = new PID(armP, armI, armD, motor.getCurrentPosition());
     }
@@ -56,10 +58,10 @@ public class Arm extends RobotPart {
 
         switch (wobbleArmPositionSetpoints) {
             case 1:
-                position = -60;
+                position = -100;
                 break;
             case 2:
-                position = -435;
+                position = -480;
                 break;
 
         }

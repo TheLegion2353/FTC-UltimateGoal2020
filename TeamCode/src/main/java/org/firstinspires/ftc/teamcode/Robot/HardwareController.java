@@ -3,12 +3,14 @@ import java.util.ArrayList;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class HardwareController {
-	ArrayList<DcMotor> motors = null;
-	ArrayList<Servo> servos = null;
-	ArrayList<CRServo> crservos = null;
+	private ArrayList<DcMotor> motors = null;
+	private ArrayList<Servo> servos = null;
+	private ArrayList<CRServo> crservos = null;
+	private DcMotor.Direction direction = DcMotor.Direction.FORWARD;
 
 	public HardwareController() {
 		motors = new ArrayList<DcMotor>();
@@ -21,12 +23,15 @@ public class HardwareController {
 		servos = new ArrayList<Servo>();
 		crservos = new ArrayList<CRServo>();
 		for (DcMotor mot : motorArgs) {
+			mot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 			addMotor(mot, mode);
 		}
 	}
 
 	public void addMotor(DcMotor motor, DcMotor.RunMode mode) {
+		motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		motor.setMode(mode);
+		motor.setDirection(direction);
 		motors.add(motor);
 	}
 
@@ -64,5 +69,11 @@ public class HardwareController {
 
 	public void addCRServo(CRServo crservo) {
 		crservos.add(crservo);
+	}
+
+	public void setDirection(DcMotor.Direction dir) {
+		for (DcMotor m : motors) {
+			m.setDirection(dir);
+		}
 	}
 }

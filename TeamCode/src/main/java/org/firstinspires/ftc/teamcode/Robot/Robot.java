@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Robot;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -15,15 +16,17 @@ import java.util.concurrent.TimeUnit;
 public class Robot {
     ArrayList<RobotPart> parts = new ArrayList<RobotPart>();
     private Arm arm = null;
+    private Aimer aim = null;
     private Drivetrain slide = null;
     private Grabber grabber = null;
     private Shooter shooter = null;
     private Intake intake = null;
-    private Elevator elevator = null;
     private ElapsedTime clock = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private Gamepad gamepad = null;
     private Telemetry telemetry = null;
     private ServoWacker whacker = null;
+    private boolean isWaiting = false;
+    private double endTime = 0;
     double xPosition = 0; //inches
     double yPosition = 0;
     double angle = 0;
@@ -37,7 +40,6 @@ public class Robot {
 
     public Robot(Gamepad gp) {
         gamepad = gp;
-
         slide = new Drivetrain(Drivetrain.ControlType.ARCADE, gamepad, telemetry);
         parts.add(slide);
     }
@@ -50,6 +52,10 @@ public class Robot {
         return slide.move(x, y, a);
     }
 
+    public boolean spin(double deg) {
+        return slide.spin(deg);
+    }
+
     public void update() {
         double time = (double)clock.time(TimeUnit.MILLISECONDS) / 1000.0;
 
@@ -59,7 +65,14 @@ public class Robot {
 
         if (arm != null) {
             arm.update();
+            telemetry.addData("Arm Position: ", arm.getArmPosition());
         }
+
+        if (aim != null) {
+            aim.update();
+            telemetry.addData("Aim Position: ", aim.getArmPosition());
+        }
+
         if (shooter != null) {
             shooter.update();
         }
@@ -70,10 +83,6 @@ public class Robot {
 
         if (intake != null) {
             intake.update();
-        }
-
-        if (elevator != null) {
-            elevator.update();
         }
 
         if (whacker != null) {
@@ -100,7 +109,7 @@ public class Robot {
     }
 
     public void setShooter(DcMotor ... motors) {
-        shooter = new Shooter(gamepad, motors);
+        shooter = new Shooter(gamepad, telemetry, motors);
     }
 
     public void setGrabber(Servo s) {
@@ -111,12 +120,12 @@ public class Robot {
         intake = new Intake(gamepad, motors);
     }
 
-    public void addElevator(CRServo crServo) {
-        elevator = new Elevator(gamepad, crServo);
-    }
-
     public void addWacker(Servo servo) {
         whacker = new ServoWacker(gamepad, servo);
+    }
+
+    public void addAimMotor(DcMotor m) {
+        aim = (new Aimer(gamepad, m, telemetry));
     }
 
     public void setPosition(double x, double y, double a) {
@@ -132,5 +141,23 @@ public class Robot {
 
     public void setGrab(int grab) {
         grabber.setGrab(grab);
+    }
+
+    public boolean getIsWaiting() {
+        telemetry.addData("Time: ", System.currentTimeMillis());
+        return System.currentTimeMillis() < endTime;
+    }
+
+    public void wait(double t) {
+        slide.zeroMovement();
+        endTime = t + System.currentTimeMillis();
+    }
+
+    public boolean setAngle(double a) {
+        return slide.moveAngle(a);
+    }
+
+    public void setIMU(BNO055IMU mu) {
+        slide.setIMU(mu);
     }
 }

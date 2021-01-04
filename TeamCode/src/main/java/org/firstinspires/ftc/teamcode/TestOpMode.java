@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -22,8 +21,8 @@ public class TestOpMode extends OpMode {
         robot.setShooter(hardwareMap.get(DcMotor.class, "firstFlywheel"));
         robot.setIntake(hardwareMap.get(DcMotor.class, "intakeMotor"));
         robot.setGrabber(hardwareMap.get(Servo.class, "wgServo"));
-        robot.addElevator(hardwareMap.get(CRServo.class, "elevatorServo"));
         robot.addWacker(hardwareMap.get(Servo.class, "servoWacker"));
+        robot.addAimMotor(hardwareMap.get(DcMotor.class, "aimMotor"));
     }
 
     @Override

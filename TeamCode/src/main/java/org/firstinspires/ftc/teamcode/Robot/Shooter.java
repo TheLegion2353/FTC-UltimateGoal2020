@@ -18,6 +18,7 @@ public class Shooter extends RobotPart{
         telemetry = t;
         pid = new PID(0.002, 0.001, 0.00001, 0);
         shooter = new HardwareController(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
+        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
     @Override
@@ -26,8 +27,8 @@ public class Shooter extends RobotPart{
         double power = pid.PIDLoop(velocity);
         telemetry.addData("Power: ", power);
         telemetry.addData("Velocity", velocity);
-        if (power<0){
-            power=0;
+        if (power < 0){
+            power = 0;
         }
         if (gamepad.y) {
             pid.setSetPoint(1776);

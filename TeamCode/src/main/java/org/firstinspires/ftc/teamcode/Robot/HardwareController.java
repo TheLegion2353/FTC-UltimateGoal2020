@@ -76,4 +76,10 @@ public class HardwareController {
 			m.setDirection(dir);
 		}
 	}
+
+	public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior b) {
+		for (DcMotor m : motors) {
+			m.setZeroPowerBehavior(b);
+		}
+	}
 }

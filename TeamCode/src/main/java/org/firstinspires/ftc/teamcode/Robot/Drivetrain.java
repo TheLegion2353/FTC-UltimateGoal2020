@@ -111,41 +111,7 @@ public class Drivetrain extends RobotPart {
 
 	@Override
 	protected void autonomousUpdate() {
-		if (init) {  // setting up the IMU
-			BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-			parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-			parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-			parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-			parameters.loggingEnabled = true;
-			parameters.loggingTag = "IMU";
-			parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-			imu.initialize(parameters);
-			init = false;
-		}
-
-		angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);  // getting the orientation from the IMU.
-
-		double currentIMUAngle = AngleUnit.DEGREES.fromUnit(angles.angleUnit, angles.firstAngle);
-		if ((currentIMUAngle - lastIMUAngle) > 300) {  // rollover check
-			IMUAngleAcum += (currentIMUAngle - lastIMUAngle) - 360;
-		} else if ((currentIMUAngle - lastIMUAngle) < -300) {
-			IMUAngleAcum += (currentIMUAngle - lastIMUAngle) + 360;
-		} else {
-			IMUAngleAcum += currentIMUAngle - lastIMUAngle;
-		}
-
-		lastIMUAngle = AngleUnit.DEGREES.fromUnit(angles.angleUnit, angles.firstAngle);
-
-		if (needManualOdometry) {
-			angle = IMUAngleAcum;
-			double deltaX = (centerGroup.getPos() - lastEncoderX) / (28.0d * 40.0d) * (2 * Math.PI * 45.0d);
-			double deltaY = (((leftGroup.getPos() - rightGroup.getPos()) / 2.0d) - lastEncoderY) / (28.0d * 40.0d * (26.0d / 20.0d)) * (2 * Math.PI * 45.0d);
-			telemetry.addData("MOTOR DX: ", deltaX);
-			telemetry.addData("MOTOR DY: ", deltaY);
-			xPosition += deltaX * Math.cos(Math.toRadians(angle)) + deltaY * Math.sin(Math.toRadians(angle));
-			yPosition += deltaX * Math.sin(Math.toRadians(angle)) + deltaY * Math.cos(Math.toRadians(angle));
-		}
-
+		odometryUpdate();
 		netPowerLeft = 0;
 		netPowerRight = 0;
 		netPowerCenter = 0;
@@ -207,6 +173,7 @@ public class Drivetrain extends RobotPart {
 
 	@Override
 	protected void driverUpdate() {
+		odometryUpdate();
 		if (gamepad != null) {
 			switch (control) {
 				case TANK:
@@ -236,7 +203,40 @@ public class Drivetrain extends RobotPart {
 	}
 
 	private void odometryUpdate() {
+		if (init) {  // setting up the IMU
+			BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+			parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+			parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+			parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+			parameters.loggingEnabled = true;
+			parameters.loggingTag = "IMU";
+			parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+			imu.initialize(parameters);
+			init = false;
+		}
 
+		angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);  // getting the orientation from the IMU.
+
+		double currentIMUAngle = AngleUnit.DEGREES.fromUnit(angles.angleUnit, angles.firstAngle);
+		if ((currentIMUAngle - lastIMUAngle) > 300) {  // rollover check
+			IMUAngleAcum += (currentIMUAngle - lastIMUAngle) - 360;
+		} else if ((currentIMUAngle - lastIMUAngle) < -300) {
+			IMUAngleAcum += (currentIMUAngle - lastIMUAngle) + 360;
+		} else {
+			IMUAngleAcum += currentIMUAngle - lastIMUAngle;
+		}
+
+		lastIMUAngle = AngleUnit.DEGREES.fromUnit(angles.angleUnit, angles.firstAngle);
+
+		if (needManualOdometry) {
+			angle = IMUAngleAcum;
+			double deltaX = (centerGroup.getPos() - lastEncoderX) / (28.0d * 40.0d) * (2 * Math.PI * 45.0d);
+			double deltaY = (((leftGroup.getPos() - rightGroup.getPos()) / 2.0d) - lastEncoderY) / (28.0d * 40.0d * (26.0d / 20.0d)) * (2 * Math.PI * 45.0d);
+			telemetry.addData("MOTOR DX: ", deltaX);
+			telemetry.addData("MOTOR DY: ", deltaY);
+			xPosition += deltaX * Math.cos(Math.toRadians(angle)) + deltaY * Math.sin(Math.toRadians(angle));
+			yPosition += deltaX * Math.sin(Math.toRadians(angle)) + deltaY * Math.cos(Math.toRadians(angle));
+		}
 	}
 
 	private double angleToTarget() {

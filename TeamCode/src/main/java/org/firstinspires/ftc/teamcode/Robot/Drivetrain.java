@@ -30,16 +30,12 @@ public class Drivetrain extends RobotPart {
 	private double targetAngle = 0;
 	private boolean needManualOdometry = true;
 	private boolean init = true;
-	private boolean isSpinning = false;
 	private double lastEncoderX = 0;
 	private double lastEncoderY = 0;
-	private boolean hasStarted = false;
 	private boolean spinInit = false;
 	private double netPowerLeft = 0;
 	private double netPowerRight = 0;
 	private double netPowerCenter = 0;
-	private double lastLeft = 0;
-	private double lastRight = 0;
 	private Telemetry telemetry = null;
 	private double IMUAngleAcum = 0;
 	private double lastIMUAngle = 0;
@@ -113,18 +109,6 @@ public class Drivetrain extends RobotPart {
 		needManualOdometry = false; //will set to false so the odometry calc doesn't get run.
 	}
 
-	public boolean spin(double deg) {
-		isSpinning = true;
-		if (!spinInit) {
-			clock = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-			spinInit = true;
-		}
-		leftGroup.setSpeed(0.1);
-		rightGroup.setSpeed(0.1);
-		centerGroup.setSpeed(0);
-		return clock.time(TimeUnit.MILLISECONDS) >= (deg * 38.889);
-	}
-
 	@Override
 	protected void autonomousUpdate() {
 		if (init) {  // setting up the IMU
@@ -154,90 +138,71 @@ public class Drivetrain extends RobotPart {
 
 		if (needManualOdometry) {
 			angle = IMUAngleAcum;
-			double deltaX = (centerGroup.getPos() - lastEncoderX) / (560.0d) * (2 * 45.0088d * Math.PI);
-			double deltaY = (((leftGroup.getPos() - rightGroup.getPos()) / 2.0d) - lastEncoderY) / (560) * (2 * 45.0088 * Math.PI);
-			telemetry.addData("MOTOR DX: ", deltaX);  // -
-			telemetry.addData("MOTOR DY: ", deltaY);  // +
+			double deltaX = (centerGroup.getPos() - lastEncoderX) / (28.0d * 40.0d) * (2 * Math.PI * 45.0d);
+			double deltaY = (((leftGroup.getPos() - rightGroup.getPos()) / 2.0d) - lastEncoderY) / (28.0d * 40.0d * (26.0d / 20.0d)) * (2 * Math.PI * 45.0d);
+			telemetry.addData("MOTOR DX: ", deltaX);
+			telemetry.addData("MOTOR DY: ", deltaY);
 			xPosition += deltaX * Math.cos(Math.toRadians(angle)) + deltaY * Math.sin(Math.toRadians(angle));
 			yPosition += deltaX * Math.sin(Math.toRadians(angle)) + deltaY * Math.cos(Math.toRadians(angle));
-			//xPosition += deltaX;
-			//yPosition += deltaY;
 		}
-		hasStarted = true;
-		if (!isSpinning) {
-			netPowerLeft = 0;
-			netPowerRight = 0;
-			netPowerCenter = 0;
-			double referenceAngle;
-			if (!needManualOdometry) {
-				referenceAngle = angleToTarget() - (angle);
+
+		netPowerLeft = 0;
+		netPowerRight = 0;
+		netPowerCenter = 0;
+		double referenceAngle = angleToTarget() - (angle);
+		double distance = Math.pow(Math.pow(targetX - xPosition, 2) + Math.pow(targetY - yPosition, 2), (double) 1 / 2);
+
+		double deltax = Math.cos(Math.toRadians(referenceAngle + 180)) * distance;
+		double deltay = Math.sin(Math.toRadians(referenceAngle + 180)) * distance;
+
+
+		//---ANGLE---
+		//This block of code controls the angle and is independent of the position block of code (below this block).
+		anglePIDController.setSetPoint(targetAngle);
+		double anglePower = -anglePIDController.PIDLoop(angle);
+		netPowerLeft += anglePower;
+		netPowerRight += anglePower;
+
+		//---POSITION---
+		//getting the position right;  This block of code controls the position and is independent of the angle block of code (above this block).
+		xPIDController.setSetPoint(0); //the process variable is delta x and delta y, so this needs to be zero as we want to get close to the target position
+		yPIDController.setSetPoint(0);
+		double xPower = xPIDController.PIDLoop(deltax);
+		double yPower = yPIDController.PIDLoop(deltay);
+		netPowerLeft += yPower;
+		netPowerRight -= yPower;
+		netPowerCenter += xPower;
+		telemetry.addData("Position X: ", xPosition);
+		telemetry.addData("Position Y: ", yPosition);
+		telemetry.addData("Target X: ", targetX);
+		telemetry.addData("Target Y: ", targetY);
+		telemetry.addData("Delta X: ", deltax);
+		telemetry.addData("Delta Y: ", deltay);
+		needManualOdometry = true; //set flag to true.  If the setPosition() is called, signifying a definitive position is known, needManualOdometry will be set back to false.
+		lastEncoderY = (leftGroup.getPos() - rightGroup.getPos()) / 2.0d; //subtracted because they have different signs as the motors face opposite directions.
+		lastEncoderX = (centerGroup.getPos());
+
+		/*
+		if (netPowerLeft > 1 || netPowerLeft < -1) {  // pseudo-normalization step
+			netPowerRight /= netPowerLeft;
+			if (netPowerLeft > 1) {
+				netPowerLeft = 1;
 			} else {
-				referenceAngle = angleToTarget() - (angle);
+				netPowerLeft = -1;
 			}
-			double deltax = targetX - xPosition; //temporarily store the x and y components to find the distance.
-			double deltay = targetY - yPosition;
-			double distance = Math.pow(Math.pow(deltax, 2) + Math.pow(deltay, 2), (double) 1 / 2);
-			if (true) {
-				deltay = Math.sin(Math.toRadians(referenceAngle + 180)) * distance; //may need to swap sine and cosine functions if the angleToTarget() function needs to return its value + 90 degrees.
-				deltax = Math.cos(Math.toRadians(referenceAngle + 180)) * distance;
-				//basically, these lines above compose a x and y value that needs to be moved relative to the current angle and the current position.
+		} else if (netPowerRight > 1 || netPowerRight < -1) {
+			netPowerLeft /= netPowerRight;
+			if (netPowerRight > 1) {
+				netPowerRight = 1;
 			} else {
-				deltay = Math.sin(Math.toRadians(referenceAngle)) * distance; //may need to swap sine and cosine functions if the angleToTarget() function needs to return its value + 90 degrees.
-				deltax = Math.cos(Math.toRadians(referenceAngle)) * distance;
-				//basically, these lines above compose a x and y value that needs to be moved relative to the current angle and the current position.
+				netPowerRight = -1;
 			}
-			//---ANGLE---
-			//This block of code controls the angle and is independent of the position block of code (below this block).
-
-			anglePIDController.setSetPoint(targetAngle);
-			double anglePower = -anglePIDController.PIDLoop(angle);
-			telemetry.addData("angle: ", angle);
-			telemetry.addData("angleto: ", targetAngle);
-
-			netPowerLeft += anglePower;
-			netPowerRight += anglePower;
-
-			//---POSITION---
-			//getting the position right;  This block of code controls the position and is independent of the angle block of code (above this block).
-			xPIDController.setSetPoint(0); //the process variable is delta x and delta y, so this needs to be zero as we want to get close to the target position
-			yPIDController.setSetPoint(0);
-			double xPower = xPIDController.PIDLoop(deltax);
-			double yPower = yPIDController.PIDLoop(deltay);
-			netPowerLeft += yPower;
-			netPowerRight -= yPower;
-			netPowerCenter += xPower;
-			telemetry.addData("Position X: ", xPosition);
-			telemetry.addData("Position Y: ", yPosition);
-			telemetry.addData("Target X: ", targetX);
-			telemetry.addData("Target Y: ", targetY);
-			telemetry.addData("Delta X: ", deltax);
-			telemetry.addData("Delta Y: ", deltay);
-			needManualOdometry = true; //set flag to true.  If the setPosition() is called, signifying a definitive position is known, needManualOdometry will be set back to false.
-			lastEncoderY = (leftGroup.getPos() - rightGroup.getPos()) / (double) 2; //subtracted because they have different signs as the motors face opposite directions.
-			lastEncoderX = (centerGroup.getPos());
-			/*
-			if (netPowerLeft > 1 || netPowerLeft < -1) {  // pseudo-normalization step
-				netPowerRight /= netPowerLeft;
-				if (netPowerLeft > 1) {
-					netPowerLeft = 1;
-				} else {
-					netPowerLeft = -1;
-				}
-			} else if (netPowerRight > 1 || netPowerRight < -1) {
-				netPowerLeft /= netPowerRight;
-				if (netPowerRight > 1) {
-					netPowerRight = 1;
-				} else {
-					netPowerRight = -1;
-				}
-			}*/
-			leftGroup.setSpeed(netPowerLeft);
-			rightGroup.setSpeed(netPowerRight);
-			centerGroup.setSpeed(netPowerCenter);
 		}
-		lastLeft = leftGroup.getPos();
-		lastRight = rightGroup.getPos();
-		isSpinning = false;
+		*/
+
+		leftGroup.setSpeed(netPowerLeft);
+		rightGroup.setSpeed(netPowerRight);
+		centerGroup.setSpeed(netPowerCenter);
 	}
 
 	@Override
@@ -270,10 +235,16 @@ public class Drivetrain extends RobotPart {
 		}
 	}
 
+	private void odometryUpdate() {
+
+	}
+
 	private double angleToTarget() {
 		double dx = targetX - xPosition;
 		double dy = targetY - yPosition;
-		return Math.toDegrees(Math.atan2(dy, dx));
+		double a = Math.toDegrees(Math.atan2(dy, dx));
+		telemetry.addData("AngleToTarget: ", a);
+		return a;
 	}
 
 	public void zeroMovement() {

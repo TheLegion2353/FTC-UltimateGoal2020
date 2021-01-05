@@ -235,25 +235,22 @@ public class AutonomousOpMode extends OpMode {
 			//tfod.setZoom(2.5, 1.78);
 		}
 		robot.setGrab(0);
-		robot.setArmPosition(-60);
+		robot.setArmPosition(-100);
 	}
 
 	@Override
 	public void init_loop() {
 		vuforiaLoop();
 		TFLoop();
-		robot.setPosition(-288, -1100, 180); //starting position
+		robot.setPosition(0, 0, 0); //starting position
 	}
 
 	@Override
 	public void start() {
-		robot.setPosition(-288, -1100, 180); //starting position
+		robot.setPosition(0, 0, 0); //starting position
 		vuforiaLoop();
 		robot.update();
-		if (path == AutoPath.A) {
-			//wobbleX = -50;
-			//wobbleY = -789;
-			//wobbleAngle = 105;
+		if (path == AutoPath.A) { //These all need to be changed.
 			wobbleX = 500;
 			wobbleY = -912;
 			wobbleAngle = 96;
@@ -290,7 +287,7 @@ public class AutonomousOpMode extends OpMode {
 		if (!robot.getIsWaiting()) {
 			robot.update();
 			if (currentTask == 0) {
-				if (robot.move(-288, 1100, 180)) {
+				if (robot.move(0, 0, 0)) {
 					currentTask++;
 				}
 			} else if (currentTask == 1) {

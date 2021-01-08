@@ -25,4 +25,8 @@ public class ServoWacker extends RobotPart {
 	protected void autonomousUpdate() {
 
 	}
+
+	public void setPosition(double p) {
+		wacker.setPosition(p);
+	}
 }

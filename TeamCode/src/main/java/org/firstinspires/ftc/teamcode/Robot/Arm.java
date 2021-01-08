@@ -75,8 +75,9 @@ public class Arm extends RobotPart {
         }
     }
 
-    public void setArmPosition(double pos) {
+    public boolean setArmPosition(double pos) {
         position = pos;
+        return Math.abs(motor.getCurrentPosition() - pos) < 20;
     }
 
     public double getArmPosition() {

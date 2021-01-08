@@ -39,6 +39,7 @@ public class Drivetrain extends RobotPart {
 	private Telemetry telemetry = null;
 	private double IMUAngleAcum = 0;
 	private double lastIMUAngle = 0;
+	private boolean dpadLeftPressed = false;
 
 	BNO055IMU imu;
 
@@ -48,9 +49,9 @@ public class Drivetrain extends RobotPart {
 	public Drivetrain(ControlType ct, Gamepad gp, Telemetry t) {
 		super(gp);
 		telemetry = t;
-		anglePIDController = new PID(0.01, 0, 0,0);
-		xPIDController = new PID(0.00075, 0, 0.000025, 0.00001);
-		yPIDController = new PID(0.00075, 0, 0.000025, 0.00001);
+		anglePIDController = new PID(0.02d, 0.0d, 0.0d,0.0d);
+		xPIDController = new PID(0.00150d, 0, 0.0005d, 0.00002d);
+		yPIDController = new PID(0.00150d, 0, 0.0005d, 0.00002d);
 		control = ct;
 		leftGroup = new HardwareController();
 		rightGroup = new HardwareController();
@@ -84,29 +85,36 @@ public class Drivetrain extends RobotPart {
 	}
 
 	public boolean move(double x, double y) {
-		targetX = x;
-		targetY = y;
+		targetX = x / 2.0d;
+		targetY = y / 2.0d;
 		return (Math.abs(targetX - xPosition) < 50 && Math.abs(targetY - yPosition) < 50);
 	}
 
 	public boolean moveAngle(double a) {
 		targetAngle = a;
-		return (Math.abs(targetAngle - angle) < 0.5d);
+		return (Math.abs(targetAngle - angle) < 0.25d);
 	}
 
 	public boolean move(double x, double y, double a) {
-		targetX = x;
-		targetY = y;
+		targetX = x / 2.0d;
+		targetY = y / 2.0d;
 		targetAngle = a;
-		return (Math.abs(targetX - xPosition) < 50 && Math.abs(targetY - yPosition) < 50 && Math.abs(targetAngle - angle) < 2);
+		return (Math.abs(targetX - xPosition) < 50 && Math.abs(targetY - yPosition) < 50 && Math.abs(targetAngle - angle) < 0.5d);
+	}
+
+	public boolean moveExact(double x, double y, double a) {
+		targetX = x / 2.0d;
+		targetY = y / 2.0d;
+		targetAngle = a;
+		return (Math.abs(targetX - xPosition) < 5 && Math.abs(targetY - yPosition) < 5 && Math.abs(targetAngle - angle) < 0.5d);
 	}
 
 	public void setPosition(double x, double y, double a) {
-		xPosition = x;
-		yPosition = y;
-		angle = a;
-		IMUAngleAcum = a;
-		needManualOdometry = false; //will set to false so the odometry calc doesn't get run.
+		//xPosition = x;
+		//yPosition = y;
+		//angle = a;
+		//IMUAngleAcum = a;
+		//needManualOdometry = false; //will set to false so the odometry calc doesn't get run.
 	}
 
 	@Override
@@ -116,7 +124,7 @@ public class Drivetrain extends RobotPart {
 		netPowerRight = 0;
 		netPowerCenter = 0;
 		double referenceAngle = angleToTarget() - (angle);
-		double distance = Math.pow(Math.pow(targetX - xPosition, 2) + Math.pow(targetY - yPosition, 2), (double) 1 / 2);
+		double distance = Math.pow(Math.pow(targetX - xPosition, 2) + Math.pow(targetY - yPosition, 2), 1.0d / 2.0d);
 
 		double deltax = Math.cos(Math.toRadians(referenceAngle + 180)) * distance;
 		double deltay = Math.sin(Math.toRadians(referenceAngle + 180)) * distance;
@@ -194,9 +202,37 @@ public class Drivetrain extends RobotPart {
 					} else {
 						strafePower = -(Math.pow(10, ((-strafePower) - 1.10914)) + 1 - Math.pow(10, -0.10914));
 					}
-					leftGroup.setSpeed(leftPower);
-					rightGroup.setSpeed(rightPower);
-					centerGroup.setSpeed(strafePower);
+					if (!gamepad.dpad_down) {
+						leftGroup.setSpeed(leftPower);
+						rightGroup.setSpeed(rightPower);
+						centerGroup.setSpeed(strafePower);
+					} else {
+						anglePIDController.setSetPoint(targetAngle);
+						double anglePower = -anglePIDController.PIDLoop(angle);
+						netPowerLeft += anglePower;
+						netPowerRight += anglePower;
+						leftGroup.setSpeed(anglePower);
+						rightGroup.setSpeed(anglePower);
+					}
+
+					if (gamepad.dpad_right) {
+						if (!dpadLeftPressed) {
+							if (targetAngle == 0.0d) {
+								targetAngle = 15.0d;
+							} else if (targetAngle == 15.0d) {
+								targetAngle = 25.0d;
+							} else if (targetAngle == 25.0d) {
+								targetAngle = 30.0d;
+							} else if (targetAngle == 30.0d) {
+								targetAngle = 35.0d;
+							} else {
+								targetAngle = 0.0d;
+							}
+						}
+						dpadLeftPressed = true;
+					} else {
+						dpadLeftPressed = false;
+					}
 					break;
 			}
 		}
@@ -230,8 +266,8 @@ public class Drivetrain extends RobotPart {
 
 		if (needManualOdometry) {
 			angle = IMUAngleAcum;
-			double deltaX = (centerGroup.getPos() - lastEncoderX) / (28.0d * 40.0d) * (2 * Math.PI * 45.0d);
-			double deltaY = (((leftGroup.getPos() - rightGroup.getPos()) / 2.0d) - lastEncoderY) / (28.0d * 40.0d * (26.0d / 20.0d)) * (2 * Math.PI * 45.0d);
+			double deltaX = (centerGroup.getPos() - lastEncoderX) / (28.0d * 40.0d) * (2.0d * Math.PI * 45.0d);
+			double deltaY = (((leftGroup.getPos() - rightGroup.getPos()) / 2.0d) - lastEncoderY) / (28.0d * 40.0d * (26.0d / 20.0d)) * (2.0d * Math.PI * 45.0d);
 			telemetry.addData("MOTOR DX: ", deltaX);
 			telemetry.addData("MOTOR DY: ", deltaY);
 			xPosition += deltaX * Math.cos(Math.toRadians(angle)) + deltaY * Math.sin(Math.toRadians(angle));

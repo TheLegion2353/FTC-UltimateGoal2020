@@ -52,8 +52,8 @@ public class Robot {
         return slide.move(x, y, a);
     }
 
-    public boolean spin(double deg) {
-        return slide.spin(deg);
+    public boolean moveExact(double x, double y, double a) {
+        return slide.moveExact(x, y, a);
     }
 
     public void update() {
@@ -135,8 +135,8 @@ public class Robot {
         slide.setPosition(x, y, a);
     }
 
-    public void setArmPosition(int pos) {
-        arm.setArmPosition(pos);
+    public boolean setArmPosition(int pos) {
+        return arm.setArmPosition(pos);
     }
 
     public void setGrab(int grab) {
@@ -159,5 +159,21 @@ public class Robot {
 
     public void setIMU(BNO055IMU mu) {
         slide.setIMU(mu);
+    }
+
+    public boolean setShooterSpeed(double s) {
+        return shooter.setSpeed(s);
+    }
+
+    public boolean setAimer(double a) {
+        return aim.setAngle(a);
+    }
+
+    public void setWhacker(double p) {
+        whacker.setPosition(p);
+    }
+
+    public void setGrabber(int p) {
+        grabber.setGrab(p);
     }
 }

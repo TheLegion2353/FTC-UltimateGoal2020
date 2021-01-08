@@ -34,6 +34,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
 public class AutonomousOpMode extends OpMode {
 	Robot robot = null;
 	AutoPath path = null;
+	private double t = 0;
 	double wobbleX;
 	double wobbleY;
 	double wobbleAngle;
@@ -84,7 +85,10 @@ public class AutonomousOpMode extends OpMode {
 		robot.setSlideGroup(hardwareMap.get(DcMotor.class, "sMotor"));
 		robot.setArmMotor(hardwareMap.get(DcMotor.class, "waMotor"));
 		robot.setShooter(hardwareMap.get(DcMotor.class, "firstFlywheel"));
+		robot.setIntake(hardwareMap.get(DcMotor.class, "intakeMotor"));
 		robot.setGrabber(hardwareMap.get(Servo.class, "wgServo"));
+		robot.addWacker(hardwareMap.get(Servo.class, "servoWacker"));
+		robot.addAimMotor(hardwareMap.get(DcMotor.class, "aimMotor"));
 		robot.setIMU(hardwareMap.get(BNO055IMU.class, "imu 1"));
 
 		//vuforia things:
@@ -286,16 +290,121 @@ public class AutonomousOpMode extends OpMode {
 
 		if (!robot.getIsWaiting()) {
 			robot.update();
-			if (currentTask == 0) {
-				if (robot.move(0, 0, 0)) {
-					currentTask++;
+
+			switch (currentTask) {
+				case 0: {
+					if (robot.move(0, 1520, 0)) {
+						currentTask++;
+					}
+				} break;
+
+				case 1: {
+					if (robot.setAngle(180.0d)) {
+						currentTask++;
+					}
+				} break;
+
+				case 2: {
+					if (robot.setArmPosition(-420)) {
+						currentTask++;
+						robot.setGrabber(1);
+					}
+				} break;
+
+				case 3: {
+					if (robot.setArmPosition(0)) {
+						currentTask++;
+					}
+				} break;
+
+				case 4: {
+					if (robot.moveExact(-500, 1520, 180)) {
+						currentTask++;
+					}
+				} break;
+
+				case 5: {
+					if (robot.setAngle(200)) {
+						currentTask++;
+					}
+				} break;
+
+				case 6: {
+					if (robot.setAimer(1050)) {
+						currentTask++;
+					}
+				} break;
+
+				case 7: {
+					if (robot.setShooterSpeed(1)) {
+						currentTask++;
+						t = System.currentTimeMillis();
+					}
+				} break;
+
+				case 8: {
+					if (System.currentTimeMillis() >= t + 3000) {
+						robot.setWhacker(0);
+						currentTask++;
+						t = System.currentTimeMillis();
+					}
+				} break;
+
+				case 9: {
+					if (System.currentTimeMillis() >= t + 500) {
+						currentTask++;
+						robot.setWhacker(1);
+					}
+				} break;
+
+				case 10: {
+					if (robot.setAngle(205)) {
+						robot.setWhacker(0);
+						currentTask++;
+						t = System.currentTimeMillis();
+					}
+				} break;
+
+				case 11: {
+					if (System.currentTimeMillis() >= t + 500) {
+						robot.setWhacker(1);
+						currentTask++;
+					}
+				} break;
+
+				case 12: {
+					if (robot.setAngle(210)) {
+						robot.setWhacker(0);
+						currentTask++;
+						t = System.currentTimeMillis();
+					}
+				} break;
+
+				case 13: {
+					if (System.currentTimeMillis() >= t + 500) {
+						robot.setWhacker(1);
+						robot.setAimer(-10);
+						if (robot.setShooterSpeed(0)) {
+							currentTask++;
+						}
+					}
+				} break;
+
+				case 14: {
+					if (robot.setAngle(180)) {
+						currentTask++;
+					}
+				} break;
+
+				case 15: {
+					if (robot.move(-500, 2100, 180)) {
+						currentTask++;
+					}
+				} break;
+
+				default: {
+					//requestOpModeStop();
 				}
-			} else if (currentTask == 1) {
-				if (robot.setAngle(180.0d)) {
-					currentTask++;
-				}
-			} else {
-				requestOpModeStop();
 			}
 		} else {
 			telemetry.addLine("Waiting...");

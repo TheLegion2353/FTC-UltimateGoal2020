@@ -21,9 +21,9 @@ public class Aimer extends Arm {
 
 	public Aimer(Gamepad gp, DcMotor m, Telemetry t) {
 		super(gp, m, t);
-		armP = 0.03;
-		armI = 0.01;
-		armD = 0.01;
+		armP = 0.0015;
+		armI = 0.005;
+		armD = 0.0015;
 		PIDController = new PID(armP, armI, armD, motor.getCurrentPosition());
 	}
 
@@ -33,7 +33,7 @@ public class Aimer extends Arm {
 			if (!isLeftPressed) {
 				//gets run only once when first pressed
 				aimPositionSetpoints++;
-				if (aimPositionSetpoints > 2) {
+				if (aimPositionSetpoints > 3) {
 					aimPositionSetpoints = 1;
 				}
 			}
@@ -44,10 +44,13 @@ public class Aimer extends Arm {
 
 		switch (aimPositionSetpoints) {
 			case 1:
-				position = 34;
+				position = 900;
 				break;
 			case 2:
-				position = 10;
+				position = 1050;
+				break;
+			case 3:
+				position = 100;
 				break;
 		}
 
@@ -58,5 +61,22 @@ public class Aimer extends Arm {
 			telemetry.addData("Position: ", position);
 			telemetry.update();
 		}
+	}
+
+	@Override
+	protected void autonomousUpdate() {
+		PIDController.setSetPoint(position);
+		double power = PIDController.PIDLoop((double)motor.getCurrentPosition());
+		motor.setPower(power);
+		if (telemetry != null) {
+			telemetry.addData("Position: ", position);
+			telemetry.update();
+		}
+	}
+
+	public boolean setAngle(double s) {
+		PIDController.setSetPoint(s);
+		position = s;
+		return Math.abs(motor.getCurrentPosition() - s) < 50;
 	}
 }

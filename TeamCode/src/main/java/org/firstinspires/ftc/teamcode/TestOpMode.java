@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -23,6 +24,7 @@ public class TestOpMode extends OpMode {
         robot.setGrabber(hardwareMap.get(Servo.class, "wgServo"));
         robot.addWacker(hardwareMap.get(Servo.class, "servoWacker"));
         robot.addAimMotor(hardwareMap.get(DcMotor.class, "aimMotor"));
+        robot.setIMU(hardwareMap.get(BNO055IMU.class, "imu 1"));
     }
 
     @Override

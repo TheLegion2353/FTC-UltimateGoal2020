@@ -13,7 +13,7 @@ public class Intake extends RobotPart {
 
 	@Override
 	protected void driverUpdate() {
-		motorGroup.setSpeed(gamepad.left_trigger - gamepad.right_trigger);
+		motorGroup.setSpeed(gamepad.right_trigger - gamepad.left_trigger);
 	}
 
 	@Override

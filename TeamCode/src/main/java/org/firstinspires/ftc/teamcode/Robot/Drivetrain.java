@@ -49,7 +49,7 @@ public class Drivetrain extends RobotPart {
 	public Drivetrain(ControlType ct, Gamepad gp, Telemetry t) {
 		super(gp);
 		telemetry = t;
-		anglePIDController = new PID(0.02d, 0.0d, 0.0d,0.0d);
+		anglePIDController = new PID(0.02d, 0.001d, 0.002d,0.0d);
 		xPIDController = new PID(0.00150d, 0, 0.0005d, 0.00002d);
 		yPIDController = new PID(0.00150d, 0, 0.0005d, 0.00002d);
 		control = ct;
@@ -218,13 +218,13 @@ public class Drivetrain extends RobotPart {
 					if (gamepad.dpad_right) {
 						if (!dpadLeftPressed) {
 							if (targetAngle == 0.0d) {
-								targetAngle = 15.0d;
-							} else if (targetAngle == 15.0d) {
-								targetAngle = 25.0d;
-							} else if (targetAngle == 25.0d) {
+								targetAngle = 17.0d;
+							} else if (targetAngle == 17.0d) {
 								targetAngle = 30.0d;
 							} else if (targetAngle == 30.0d) {
-								targetAngle = 35.0d;
+								targetAngle = 34.0d;
+							} else if (targetAngle == 34.0d) {
+								targetAngle = 38.0d;
 							} else {
 								targetAngle = 0.0d;
 							}
@@ -232,6 +232,10 @@ public class Drivetrain extends RobotPart {
 						dpadLeftPressed = true;
 					} else {
 						dpadLeftPressed = false;
+					}
+
+					if (gamepad.x) {
+						IMUAngleAcum = 0;
 					}
 					break;
 			}

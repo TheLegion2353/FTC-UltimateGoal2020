@@ -13,11 +13,13 @@ public class Shooter extends RobotPart{
     private double lastTime = 0;
     private double lastVelocity = 0;
     private Telemetry telemetry = null;
+    private double averageVelocity = 0;
+    private double averageVoltage = 0;
 
     public Shooter(Gamepad gp, Telemetry t, DcMotor ... motors) {
         super(gp);
         telemetry = t;
-        pid = new PID(0.002, 0.001, 0.00001, 0);
+        pid = new PID(0.005, 0.00, 0.0, 0);
         shooter = new HardwareController(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
@@ -25,17 +27,21 @@ public class Shooter extends RobotPart{
     @Override
     public void driverUpdate() {
         double velocity = (double)(shooter.getPos() - lastPosition) / ((double)(System.currentTimeMillis() - lastTime) / 1000.0d);
-        double power = pid.PIDLoop(velocity);
-        telemetry.addData("Power: ", power);
-        telemetry.addData("Velocity", velocity);
+        averageVelocity += velocity;
+        averageVelocity /= 2;
+        double power = pid.PIDLoop(averageVelocity);
+        averageVoltage += power;
+        averageVoltage /= 2;
+        telemetry.addData("Average Power: ", averageVoltage);
+        telemetry.addData("Average Velocity", averageVelocity);
         if (power < 0){
             power = 0;
         }
         if (gamepad.y) {
-            pid.setSetPoint(1776);
-            shooter.setSpeed(power);
+            pid.setSetPoint(1800);
+            shooter.setSpeed(averageVoltage);
         } else if (gamepad.b) {
-            shooter.setSpeed(1);
+            shooter.setSpeed(0.65);
         } else {
             pid.setSetPoint(0);
             shooter.setSpeed(0);

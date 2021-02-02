@@ -254,19 +254,6 @@ public class AutonomousOpMode extends OpMode {
 		robot.setPosition(0, 0, 0); //starting position
 		vuforiaLoop();
 		robot.update();
-		if (path == AutoPath.A) { //These all need to be changed.
-			wobbleX = 500;
-			wobbleY = -912;
-			wobbleAngle = 96;
-		} else if (path == AutoPath.B) {
-			wobbleX = 636;
-			wobbleY = -789;
-			wobbleAngle = 84;
-		} else { // if C or neither A nor B.
-			wobbleX = 1055;
-			wobbleY = -1314;
-			wobbleAngle = 118;
-		}
 	}
 
 	@Override
@@ -293,7 +280,7 @@ public class AutonomousOpMode extends OpMode {
 
 			switch (currentTask) {
 				case 0: {
-					if (robot.move(0, 1520, 0)) {
+					if (robot.move(0, -1520, 0)) {
 						currentTask++;
 					}
 				} break;
@@ -305,32 +292,40 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 2: {
-					if (robot.setArmPosition(-420)) {
+					if (path != AutoPath.B) {
+						if (robot.setArmPosition(400)) {
+							currentTask++;
+							robot.setGrabber(1);
+						}
+					} else {
 						currentTask++;
-						robot.setGrabber(1);
 					}
 				} break;
 
 				case 3: {
-					if (robot.setArmPosition(0)) {
+					if (path != AutoPath.B) {
+						if (robot.setArmPosition(0)) {
+							currentTask++;
+						}
+					} else {
 						currentTask++;
 					}
 				} break;
 
 				case 4: {
-					if (robot.moveExact(-500, 1520, 180)) {
+					if (robot.moveExact(-500, -1520, 180)) {
 						currentTask++;
 					}
 				} break;
 
 				case 5: {
-					if (robot.setAngle(200)) {
+					if (robot.setAngle(180)) {
 						currentTask++;
 					}
 				} break;
 
 				case 6: {
-					if (robot.setAimer(1050)) {
+					if (robot.setAimer(-1000 * 2)) {
 						currentTask++;
 					}
 				} break;
@@ -343,7 +338,7 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 8: {
-					if (System.currentTimeMillis() >= t + 3000) {
+					if (System.currentTimeMillis() >= t + 1000) {
 						robot.setWhacker(0);
 						currentTask++;
 						t = System.currentTimeMillis();
@@ -351,14 +346,14 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 9: {
-					if (System.currentTimeMillis() >= t + 500) {
+					if (System.currentTimeMillis() >= t + 600) {
 						currentTask++;
 						robot.setWhacker(1);
 					}
 				} break;
 
 				case 10: {
-					if (robot.setAngle(205)) {
+					if (robot.setAngle(180)) {
 						robot.setWhacker(0);
 						currentTask++;
 						t = System.currentTimeMillis();
@@ -366,14 +361,14 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 11: {
-					if (System.currentTimeMillis() >= t + 500) {
+					if (System.currentTimeMillis() >= t + 600) {
 						robot.setWhacker(1);
 						currentTask++;
 					}
 				} break;
 
 				case 12: {
-					if (robot.setAngle(210)) {
+					if (robot.setAngle(180)) {
 						robot.setWhacker(0);
 						currentTask++;
 						t = System.currentTimeMillis();
@@ -381,9 +376,9 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 13: {
-					if (System.currentTimeMillis() >= t + 500) {
+					if (System.currentTimeMillis() >= t + 600) {
 						robot.setWhacker(1);
-						robot.setAimer(-10);
+						robot.setAimer(20);
 						if (robot.setShooterSpeed(0)) {
 							currentTask++;
 						}
@@ -397,7 +392,22 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 15: {
-					if (robot.move(-500, 2100, 180)) {
+					if (robot.move(-500, -2100, 180)) {
+						currentTask++;
+					}
+				} break;
+
+				case 16: {
+					if (path == AutoPath.B) {
+						if (robot.setArmPosition(-420)) {
+							currentTask++;
+							robot.setGrabber(1);
+						}
+					}
+				} break;
+
+				case 17: {
+					if (robot.setArmPosition(0)) {
 						currentTask++;
 					}
 				} break;
@@ -409,39 +419,6 @@ public class AutonomousOpMode extends OpMode {
 		} else {
 			telemetry.addLine("Waiting...");
 		}
-
-		/*
-		if (!robot.getIsWaiting()) {
-			robot.update();
-			if (currentTask == 0) {
-				robot.setGrab(0);
-				robot.setArmPosition(-100);
-				if (robot.move(1050, -1000, 0)) {
-					currentTask++;
-				}
-			} else if (currentTask == 1) {
-				if (robot.setAngle(180)) {
-					currentTask++;
-				}
-			} else if (currentTask == 2) {
-				robot.wait(1000.0d);
-				currentTask++;
-			} else if (currentTask == 3) {
-				robot.setArmPosition(-480);
-				if (robot.move(1264, -940, 90)) {
-					currentTask++;
-				}
-			} else if (currentTask == 4) { //drop the wobble
-				if (robot.move(wobbleX, wobbleY, wobbleAngle)) {
-					robot.setGrab(1);
-					currentTask++;
-				}
-			} else {
-				requestOpModeStop();
-			}
-		} else {
-			telemetry.addLine("Waiting...");
-		}*/
 	}
 
 	@Override
@@ -527,7 +504,7 @@ public class AutonomousOpMode extends OpMode {
 		int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
 				"tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
 		TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-		tfodParameters.minResultConfidence = 0.8f;
+		tfodParameters.minResultConfidence = 0.5f;
 		tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
 		tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
 	}

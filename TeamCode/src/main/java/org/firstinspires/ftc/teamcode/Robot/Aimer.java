@@ -33,7 +33,7 @@ public class Aimer extends Arm {
 			if (!isLeftPressed) {
 				//gets run only once when first pressed
 				aimPositionSetpoints++;
-				if (aimPositionSetpoints > 3) {
+				if (aimPositionSetpoints > 2) {
 					aimPositionSetpoints = 1;
 				}
 			}
@@ -44,13 +44,10 @@ public class Aimer extends Arm {
 
 		switch (aimPositionSetpoints) {
 			case 1:
-				position = 900;
+				position = -1000* 2;
 				break;
 			case 2:
-				position = 1050;
-				break;
-			case 3:
-				position = 100;
+				position = -100 * 2;
 				break;
 		}
 

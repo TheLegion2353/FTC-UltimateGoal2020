@@ -58,10 +58,10 @@ public class Arm extends RobotPart {
 
         switch (wobbleArmPositionSetpoints) {
             case 1:
-                position = 100;
+                position = 50;
                 break;
             case 2:
-                position = 480;
+                position = 410;
                 break;
 
         }

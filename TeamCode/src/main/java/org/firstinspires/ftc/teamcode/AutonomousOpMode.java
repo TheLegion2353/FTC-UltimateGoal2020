@@ -42,6 +42,7 @@ public class AutonomousOpMode extends OpMode {
 	double wobbleY2 = 0;
 	double wobbleAngle2 = 0;
 	int currentTask = 0;
+	private int subTask = 0;
 	//TensorFlow related things:
 	private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
 	private static final String LABEL_FIRST_ELEMENT = "Quad";
@@ -277,6 +278,7 @@ public class AutonomousOpMode extends OpMode {
 
 		if (!robot.getIsWaiting()) {
 			robot.update();
+			robot.updatePIDS();
 
 			switch (currentTask) {
 				case 0: {
@@ -319,19 +321,19 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 5: {
-					if (robot.setAngle(180)) {
+					if (robot.setAngle(192)) {
 						currentTask++;
 					}
 				} break;
 
 				case 6: {
-					if (robot.setAimer(-1000 * 2)) {
+					if (robot.setAimer(950)) {
 						currentTask++;
 					}
 				} break;
 
 				case 7: {
-					if (robot.setShooterSpeed(1)) {
+					if (robot.setShooterSpeed(65)) {
 						currentTask++;
 						t = System.currentTimeMillis();
 					}
@@ -339,81 +341,67 @@ public class AutonomousOpMode extends OpMode {
 
 				case 8: {
 					if (System.currentTimeMillis() >= t + 1000) {
-						robot.setWhacker(0);
-						currentTask++;
+						robot.setWhacker(0.75);
 						t = System.currentTimeMillis();
+						currentTask++;
 					}
 				} break;
 
 				case 9: {
-					if (System.currentTimeMillis() >= t + 600) {
+					if (subTask > 2) {
+						robot.setWhacker(0);
+						if (System.currentTimeMillis() >= t + 500) {
+							robot.setWhacker(0.75);
+						} else if (System.currentTimeMillis() >= t + 1000) {
+							subTask++;
+						}
+					} else {
+						subTask = 0;
 						currentTask++;
-						robot.setWhacker(1);
 					}
 				} break;
 
 				case 10: {
-					if (robot.setAngle(180)) {
-						robot.setWhacker(0);
-						currentTask++;
-						t = System.currentTimeMillis();
-					}
-				} break;
-
-				case 11: {
 					if (System.currentTimeMillis() >= t + 600) {
-						robot.setWhacker(1);
-						currentTask++;
-					}
-				} break;
-
-				case 12: {
-					if (robot.setAngle(180)) {
-						robot.setWhacker(0);
-						currentTask++;
-						t = System.currentTimeMillis();
-					}
-				} break;
-
-				case 13: {
-					if (System.currentTimeMillis() >= t + 600) {
-						robot.setWhacker(1);
-						robot.setAimer(20);
+						robot.setWhacker(.75);
+						robot.setAimer(-10);
 						if (robot.setShooterSpeed(0)) {
 							currentTask++;
 						}
 					}
 				} break;
 
-				case 14: {
+				case 11: {
 					if (robot.setAngle(180)) {
 						currentTask++;
 					}
 				} break;
 
-				case 15: {
+				case 12: {
 					if (robot.move(-500, -2100, 180)) {
 						currentTask++;
 					}
 				} break;
 
-				case 16: {
+				case 13: {
 					if (path == AutoPath.B) {
-						if (robot.setArmPosition(-420)) {
+						if (robot.setArmPosition(400)) {
 							currentTask++;
 							robot.setGrabber(1);
 						}
+					} else {
+						currentTask++;
 					}
 				} break;
 
-				case 17: {
+				case 14: {
 					if (robot.setArmPosition(0)) {
 						currentTask++;
 					}
 				} break;
 
 				default: {
-					//requestOpModeStop();
+					requestOpModeStop();
 				}
 			}
 		} else {

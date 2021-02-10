@@ -87,7 +87,7 @@ public class Drivetrain extends RobotPart {
 	public boolean move(double x, double y) {
 		targetX = x / 2.0d;
 		targetY = y / 2.0d;
-		return (Math.abs(targetX - xPosition) < 50 && Math.abs(targetY - yPosition) < 50);
+		return (Math.abs(targetX - xPosition) < 100 && Math.abs(targetY - yPosition) < 100);
 	}
 
 	public boolean moveAngle(double a) {
@@ -99,14 +99,14 @@ public class Drivetrain extends RobotPart {
 		targetX = x / 2.0d;
 		targetY = y / 2.0d;
 		targetAngle = a;
-		return (Math.abs(targetX - xPosition) < 50 && Math.abs(targetY - yPosition) < 50 && Math.abs(targetAngle - angle) < 0.5d);
+		return (Math.abs(targetX - xPosition) < 100 && Math.abs(targetY - yPosition) < 100 && Math.abs(targetAngle - angle) < 0.5d);
 	}
 
 	public boolean moveExact(double x, double y, double a) {
 		targetX = x / 2.0d;
 		targetY = y / 2.0d;
 		targetAngle = a;
-		return (Math.abs(targetX - xPosition) < 5 && Math.abs(targetY - yPosition) < 5 && Math.abs(targetAngle - angle) < 0.5d);
+		return (Math.abs(targetX - xPosition) < 15 && Math.abs(targetY - yPosition) < 15 && Math.abs(targetAngle - angle) < 0.5d);
 	}
 
 	public void setPosition(double x, double y, double a) {

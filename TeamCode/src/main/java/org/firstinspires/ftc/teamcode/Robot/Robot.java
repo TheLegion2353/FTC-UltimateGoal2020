@@ -57,6 +57,7 @@ public class Robot {
     }
 
     public void update() {
+
         double time = (double)clock.time(TimeUnit.MILLISECONDS) / 1000.0;
 
         for (RobotPart part : parts) {
@@ -92,6 +93,9 @@ public class Robot {
         clock.reset();
     }
 
+    public void updatePIDS() {
+        shooter.updatePID();
+    }
     public void setLeftGroup(DcMotor ... motors) {
         slide.setLeftGroup(DcMotor.RunMode.RUN_USING_ENCODER, motors);
     }

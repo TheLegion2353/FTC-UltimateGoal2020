@@ -19,51 +19,63 @@ public class Shooter extends RobotPart{
     public Shooter(Gamepad gp, Telemetry t, DcMotor ... motors) {
         super(gp);
         telemetry = t;
-        pid = new PID(0.005, 0.00, 0.0, 0);
+        pid = new PID(0.075, 0.04, 0.0, 0);
         shooter = new HardwareController(DcMotor.RunMode.RUN_WITHOUT_ENCODER, motors);
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
     @Override
     public void driverUpdate() {
-        double velocity = (double)(shooter.getPos() - lastPosition) / ((double)(System.currentTimeMillis() - lastTime) / 1000.0d);
-        averageVelocity += velocity;
-        averageVelocity /= 2;
+        double velocity = (double)(shooter.getPos() - lastPosition) / ((double)(System.currentTimeMillis() - lastTime) / 1000);
+        velocity /= 28;
+        lastPosition = shooter.getPos();
+        lastTime = System.currentTimeMillis();
+        averageVelocity = velocity;
         double power = pid.PIDLoop(averageVelocity);
         averageVoltage += power;
         averageVoltage /= 2;
         telemetry.addData("Average Power: ", averageVoltage);
         telemetry.addData("Average Velocity", averageVelocity);
-        if (power < 0){
-            power = 0;
+        if (averageVoltage < 0){
+            averageVoltage = 0;
         }
         if (gamepad.y) {
-            pid.setSetPoint(1800);
+            pid.setSetPoint(65);
             shooter.setSpeed(averageVoltage);
         } else if (gamepad.b) {
-            shooter.setSpeed(0.65);
+            pid.setSetPoint(60);
+            shooter.setSpeed(averageVoltage);
+        } else if (gamepad.a) {
+            shooter.setSpeed(0.7);
         } else {
             pid.setSetPoint(0);
             shooter.setSpeed(0);
         }
-        lastPosition = shooter.getPos();
-        lastTime = System.currentTimeMillis();
     }
 
     @Override
     public void autonomousUpdate() {
-
+        double velocity = (double)(shooter.getPos() - lastPosition) / ((double)(System.currentTimeMillis() - lastTime) / 1000);
+        velocity /= 28;
+        lastPosition = shooter.getPos();
+        lastTime = System.currentTimeMillis();
+        averageVelocity = velocity;
+        double power = pid.PIDLoop(averageVelocity);
+        averageVoltage += power;
+        averageVoltage /= 2;
+        telemetry.addData("Average Power: ", averageVoltage);
+        telemetry.addData("Average Velocity", averageVelocity);
+        if (averageVoltage < 0){
+            averageVoltage = 0;
+        }
+        shooter.setSpeed(averageVoltage);
     }
 
     public boolean setSpeed(double s) {
-        shooter.setSpeed(s);
-        double velocity = (double)(shooter.getPos() - lastPosition) / ((double)(System.currentTimeMillis() - lastTime) / 1000.0d);
-        if (Math.abs(lastVelocity - velocity) <= 0.05d) {
-            return true;
-        }
-        lastVelocity = (double)(shooter.getPos() - lastPosition) / ((double)(System.currentTimeMillis() - lastTime) / 1000.0d);
-        lastPosition = shooter.getPos();
-        lastTime = System.currentTimeMillis();
-        return false;
+        pid.setSetPoint(s);
+        return(Math.abs(averageVelocity - s) < 5);
+    }
+
+    public void updatePID() {
     }
 }

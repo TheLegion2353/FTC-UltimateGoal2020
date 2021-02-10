@@ -28,7 +28,7 @@ public class Grabber extends RobotPart{
 		} else {
 			isRBDown = false;
 		}
-		servo.setPosition(wobbleGrabPosition);
+		servo.setPosition(wobbleGrabPosition * .5);
 	}
 
 	@Override
@@ -37,6 +37,6 @@ public class Grabber extends RobotPart{
 	}
 
 	public void setGrab(int grab) {
-		servo.setPosition(grab);
+		servo.setPosition(grab * .5);
 	}
 }

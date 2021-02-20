@@ -49,9 +49,9 @@ public class Drivetrain extends RobotPart {
 	public Drivetrain(ControlType ct, Gamepad gp, Telemetry t) {
 		super(gp);
 		telemetry = t;
-		anglePIDController = new PID(0.02d, 0.001d, 0.002d,0.0d);
-		xPIDController = new PID(0.00150d, 0, 0.0005d, 0.00002d);
-		yPIDController = new PID(0.00150d, 0, 0.0005d, 0.00002d);
+		anglePIDController = new PID(0.01d, 0.001d, 0.00d,0.0d);
+		xPIDController = new PID(0.003d, 0.0003d, 0.00075d, 0.00002d);
+		yPIDController = new PID(0.003d, 0.0003d, 0.00075d, 0.00002d);
 		control = ct;
 		leftGroup = new HardwareController();
 		rightGroup = new HardwareController();
@@ -194,7 +194,7 @@ public class Drivetrain extends RobotPart {
 					double rightPower = -gamepad.left_stick_y - gamepad.right_stick_x;
 					leftPower = -leftPower;
 					rightPower = -rightPower;
-					double strafePower = gamepad.left_stick_x;
+					double strafePower = -gamepad.left_stick_x;
 					if (Math.abs(strafePower) < .5f) {
 						strafePower /= 5;
 					} else if (strafePower >= 0) {

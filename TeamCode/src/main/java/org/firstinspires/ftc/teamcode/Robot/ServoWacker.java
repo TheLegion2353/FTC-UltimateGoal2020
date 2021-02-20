@@ -15,9 +15,9 @@ public class ServoWacker extends RobotPart {
 	@Override
 	protected void driverUpdate() {
 		if (gamepad.dpad_up) {
-			wacker.setPosition(0);
+			wacker.setPosition(0.4);
 		} else {
-			wacker.setPosition(0.75);
+			wacker.setPosition(1);
 		}
 	}
 
@@ -28,5 +28,9 @@ public class ServoWacker extends RobotPart {
 
 	public void setPosition(double p) {
 		wacker.setPosition(p);
+	}
+
+	public double getPosition() {
+		return wacker.getPos();
 	}
 }

@@ -73,7 +73,7 @@ public class Shooter extends RobotPart{
 
     public boolean setSpeed(double s) {
         pid.setSetPoint(s);
-        return(Math.abs(averageVelocity - s) < 5);
+        return((Math.abs(averageVelocity - s) < 5) || s == 0);
     }
 
     public void updatePID() {

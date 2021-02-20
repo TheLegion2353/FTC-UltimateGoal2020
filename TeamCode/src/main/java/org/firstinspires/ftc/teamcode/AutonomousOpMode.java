@@ -34,7 +34,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
 public class AutonomousOpMode extends OpMode {
 	Robot robot = null;
 	AutoPath path = null;
-	private double t = 0;
+	private long t = 0;
 	double wobbleX;
 	double wobbleY;
 	double wobbleAngle;
@@ -255,12 +255,14 @@ public class AutonomousOpMode extends OpMode {
 		robot.setPosition(0, 0, 0); //starting position
 		vuforiaLoop();
 		robot.update();
+		subTask = 0;
 	}
 
 	@Override
 	public void loop() {
 		vuforiaLoop();  // PLEASE READ FOR TOMMOROW: the dirction for the odometry may be broken.
 		telemetry.addData("Current Task: ", currentTask);
+		telemetry.addData("SubTask: ", subTask);
 
 		/*
 		robot.update();
@@ -294,8 +296,13 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 2: {
-					if (path != AutoPath.B) {
+					if (path == AutoPath.A) {
 						if (robot.setArmPosition(400)) {
+							currentTask++;
+							robot.setGrabber(1);
+						}
+					} else if (path == AutoPath.C) {
+						if (robot.setArmPosition(400) && robot.move(0, -3000, 180)) {
 							currentTask++;
 							robot.setGrabber(1);
 						}
@@ -305,9 +312,15 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 3: {
-					if (path != AutoPath.B) {
+					if (path == AutoPath.A) {
 						if (robot.setArmPosition(0)) {
 							currentTask++;
+							robot.setGrabber(0);
+						}
+					} else if (path == AutoPath.C) {
+						if (robot.setArmPosition(0)) {
+							currentTask++;
+							robot.setGrabber(0);
 						}
 					} else {
 						currentTask++;
@@ -315,19 +328,25 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 4: {
-					if (robot.moveExact(-500, -1520, 180)) {
-						currentTask++;
+					if (path != AutoPath.C) {
+						if (robot.moveExact(-500, -1520, 180)) {
+							currentTask++;
+						}
+					} else {
+						if (robot.moveExact(-500, -1320, 180)) {
+							currentTask++;
+						}
 					}
 				} break;
 
 				case 5: {
-					if (robot.setAngle(192)) {
+					if (robot.setAngle(195)) {
 						currentTask++;
 					}
 				} break;
 
 				case 6: {
-					if (robot.setAimer(950)) {
+					if (robot.setAimer(1150)) {
 						currentTask++;
 					}
 				} break;
@@ -341,19 +360,21 @@ public class AutonomousOpMode extends OpMode {
 
 				case 8: {
 					if (System.currentTimeMillis() >= t + 1000) {
-						robot.setWhacker(0.75);
+						robot.setWhacker(1);
 						t = System.currentTimeMillis();
 						currentTask++;
+						subTask = 0;
 					}
 				} break;
 
 				case 9: {
-					if (subTask > 2) {
-						robot.setWhacker(0);
-						if (System.currentTimeMillis() >= t + 500) {
-							robot.setWhacker(0.75);
-						} else if (System.currentTimeMillis() >= t + 1000) {
+					if (subTask <= 3) {
+						robot.setWhacker(0.4);
+						if (System.currentTimeMillis() >= t + 2000) {
+							t = System.currentTimeMillis();
 							subTask++;
+						} else if (System.currentTimeMillis() >= t + 1000) {
+							robot.setWhacker(1);
 						}
 					} else {
 						subTask = 0;
@@ -362,12 +383,10 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 10: {
-					if (System.currentTimeMillis() >= t + 600) {
-						robot.setWhacker(.75);
-						robot.setAimer(-10);
-						if (robot.setShooterSpeed(0)) {
-							currentTask++;
-						}
+					robot.setWhacker(1);
+					robot.setAimer(-10);
+					if (robot.setShooterSpeed(0) && robot.setAngle(180)) {
+						currentTask++;
 					}
 				} break;
 
@@ -378,8 +397,14 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 12: {
-					if (robot.move(-500, -2100, 180)) {
-						currentTask++;
+					if (path != AutoPath.C) {
+						if (robot.move(-500, -2300, 180)) {
+							currentTask++;
+						}
+					} else {
+						if (robot.move(-500, -2000, 180)) {
+							currentTask++;
+						}
 					}
 				} break;
 

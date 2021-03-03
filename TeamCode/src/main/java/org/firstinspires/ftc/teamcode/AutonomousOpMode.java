@@ -388,7 +388,7 @@ public class AutonomousOpMode extends OpMode {
 
 				case 11: {
 					if (path != AutoPath.C) {
-						if (robot.move(-500, -2000 * forwardFactor)) {
+						if (robot.move(-500, -2100 * forwardFactor)) {
 							currentTask++;
 						}
 					} else {
@@ -403,13 +403,14 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 13: {
-					robot.setGrabber(1);
 					if (path == AutoPath.B) {
 						if (robot.setArmPosition(400)) {
 							currentTask++;
+							robot.setGrabber(1);
 						}
 					} else {
 						currentTask++;
+						robot.setGrabber(1);
 					}
 				} break;
 
@@ -455,26 +456,21 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 20: {
-					if (robot.move(75, -1700 * forwardFactor)) {
-						robot.setGrabber(1);
-						currentTask++;
+					if (path == AutoPath.A) {
+						if (robot.move(50, -2000 * forwardFactor)) {
+							robot.setGrabber(1);
+							currentTask++;
+						}
+					} else {
+						if (robot.move(-200, -2200 * forwardFactor)) {
+							robot.setGrabber(1);
+							currentTask++;
+						}
 					}
 				} break;
 
 				case 21: {
 					if (robot.setArmPosition(0)) {
-						currentTask++;
-					}
-				} break;
-
-				case 22: {
-					if (robot.move(-500, -1700 * forwardFactor)) {
-						currentTask++;
-					}
-				} break;
-
-				case 23: {
-					if (robot.move(-500, -1800 * forwardFactor)) {
 						currentTask++;
 					}
 				} break;

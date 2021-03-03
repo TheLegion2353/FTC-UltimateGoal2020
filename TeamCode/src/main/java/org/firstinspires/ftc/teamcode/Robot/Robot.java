@@ -56,6 +56,11 @@ public class Robot {
         return slide.moveExact(x, y, a);
     }
 
+    public boolean moveExact(double x, double y) {
+        return slide.moveExact(x, y);
+    }
+
+
     public void update() {
 
         double time = (double)clock.time(TimeUnit.MILLISECONDS) / 1000.0;
@@ -161,6 +166,8 @@ public class Robot {
         return slide.moveAngle(a);
     }
 
+    public boolean setAngleExact(double a) { return slide.moveAngle(a); };
+
     public void setIMU(BNO055IMU mu) {
         slide.setIMU(mu);
     }
@@ -173,8 +180,13 @@ public class Robot {
         return aim.setAngle(a);
     }
 
-    public void setWhacker(double p) {
+    public boolean setWhacker(double p) {
         whacker.setPosition(p);
+        return (Math.abs(whacker.getPosition() - p) < 1);
+    }
+
+    public double getWhackerPosition() {
+        return whacker.getPosition();
     }
 
     public void setGrabber(int p) {

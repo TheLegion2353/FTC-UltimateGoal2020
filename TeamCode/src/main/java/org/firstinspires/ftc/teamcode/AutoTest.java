@@ -30,8 +30,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
-@Autonomous(name="Autonomous", group="Autonomous")
-public class AutonomousOpMode extends OpMode {
+@Autonomous(name="Auto Tester", group="Autonomous")
+public class AutoTest extends OpMode {
 	Robot robot = null;
 	AutoPath path = null;
 	private long t = 0;
@@ -49,7 +49,7 @@ public class AutonomousOpMode extends OpMode {
 	private static final String LABEL_SECOND_ELEMENT = "Single";
 	private TFObjectDetector tfod;
 	private double forwardFactor = 0.5;
-
+	private boolean flag = false;
 	// Vuforia Related Things:
 	VuforiaTrackables targetsUltimateGoal;
 	private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
@@ -262,225 +262,18 @@ public class AutonomousOpMode extends OpMode {
 	@Override
 	public void loop() {
 		vuforiaLoop();  // PLEASE READ FOR TOMMOROW: the dirction for the odometry may be broken.
-		telemetry.addData("Current Task: ", currentTask);
-		telemetry.addData("SubTask: ", subTask);
-
-		/*
 		robot.update();
-		if (currentTask == 0) {
-			robot.setArmPosition(-60);
-			if (robot.move(wobbleX, wobbleY, wobbleAngle)) {
-				robot.setGrab(1);
-				currentTask++;
+		if (gamepad1.x) {
+			if (!flag) {
+				robot.move(0, 0 * forwardFactor, 0);
+				flag = true;
 			}
 		} else {
-			requestOpModeStop();
+			flag = false;
 		}
 
-		 */
-
-		if (!robot.getIsWaiting()) {
-			robot.update();
-			robot.updatePIDS();
-
-			switch (currentTask) {
-				case 0: {
-					if (robot.move(0, -1520 * forwardFactor, 0)) {
-						currentTask++;
-					}
-				} break;
-
-				case 1: {
-					if (robot.setAngle(180.0d)) {
-						currentTask++;
-					}
-				} break;
-
-				case 2: {
-					if (path == AutoPath.A) {
-						if (robot.setArmPosition(400)) {
-							currentTask++;
-							robot.setGrabber(1);
-						}
-					} else if (path == AutoPath.C) {
-						if (robot.setArmPosition(400) && robot.move(0, -3000 * forwardFactor)) {
-							currentTask++;
-							robot.setGrabber(1);
-						}
-					} else {
-						currentTask++;
-					}
-				} break;
-
-				case 3: {
-					if (path != AutoPath.B) {
-						if (robot.setArmPosition(0)) {
-							currentTask++;
-							robot.setGrabber(0);
-						}
-					} else {
-						currentTask++;
-					}
-				} break;
-
-				case 4: {
-					if (path != AutoPath.C) {
-						if (robot.move(-500, -1520 * forwardFactor)) {
-							currentTask++;
-						}
-					} else {
-						if (robot.move(-500, -1320 * forwardFactor)) {
-							currentTask++;
-						}
-					}
-				} break;
-
-				case 5: {
-					if (robot.setAngleExact(190)) {
-						currentTask++;
-					}
-				} break;
-
-				case 6: {
-					if (robot.setAimer(1170)) {
-						currentTask++;
-					}
-				} break;
-
-				case 7: {
-					if (robot.setShooterSpeed(65)) {
-						currentTask++;
-						t = System.currentTimeMillis();
-					}
-				} break;
-
-				case 8: {
-					if (System.currentTimeMillis() >= t + 1000) {
-						robot.setWhacker(1);
-						t = System.currentTimeMillis();
-						currentTask++;
-						subTask = 0;
-					}
-				} break;
-
-				case 9: {
-					if (subTask <= 2) {
-						robot.setWhacker(0.4);
-						if (System.currentTimeMillis() >= t + 1000) {
-							t = System.currentTimeMillis();
-							subTask++;
-						} else if (System.currentTimeMillis() >= t + 500) {
-							robot.setWhacker(1);
-						}
-					} else {
-						subTask = 0;
-						currentTask++;
-					}
-				} break;
-
-				case 10: {
-					robot.setWhacker(1);
-					robot.setAimer(-10);
-					if (robot.setShooterSpeed(0) && robot.setAngle(180)) {
-						currentTask++;
-					}
-				} break;
-
-				case 11: {
-					if (path != AutoPath.C) {
-						if (robot.move(-500, -2000 * forwardFactor)) {
-							currentTask++;
-						}
-					} else {
-						if (robot.move(-500, -1700 * forwardFactor)) {
-							currentTask++;
-						}
-					}
-				} break;
-
-				case 12: {
-					currentTask++;
-				} break;
-
-				case 13: {
-					robot.setGrabber(1);
-					if (path == AutoPath.B) {
-						if (robot.setArmPosition(400)) {
-							currentTask++;
-						}
-					} else {
-						currentTask++;
-					}
-				} break;
-
-				case 14: {
-					if (robot.setArmPosition(0)) {
-						currentTask++;
-					}
-				} break;
-
-				case 15: {
-					if (robot.setAngle(0) && robot.setArmPosition(400)) {
-						currentTask++;
-					}
-				} break;
-
-				case 16: {
-					if (true) {
-						currentTask++;
-					}
-				} break;
-
-				case 17: {
-					if (robot.moveExact(-600, -580 * forwardFactor)) {
-						currentTask++;
-						t = System.currentTimeMillis();
-					}
-				} break;
-
-				case 18: {
-					if (robot.moveExact(-640, -610 * forwardFactor)) {
-						currentTask++;
-						robot.setGrabber(0);
-						t = System.currentTimeMillis();
-					}
-				} break;
-
-				case 19: {
-					if (System.currentTimeMillis() > t + 1000) {
-						if (robot.setAngle(180.0)) {
-							currentTask++;
-						}
-					}
-				} break;
-
-				case 20: {
-					if (robot.move(75, -1700 * forwardFactor)) {
-						robot.setGrabber(1);
-						currentTask++;
-					}
-				} break;
-
-				case 21: {
-					if (robot.setArmPosition(0)) {
-						currentTask++;
-					}
-				} break;
-
-				case 22: {
-					if (robot.move(-500, -1700 * forwardFactor)) {
-						currentTask++;
-					}
-				} break;
-
-				case 23: {
-					if (robot.move(-500, -1800 * forwardFactor)) {
-						currentTask++;
-					}
-				} break;
-			}
-		} else {
-			telemetry.addLine("Waiting...");
+		if (gamepad1.y) {
+			robot.move(750, 0 * forwardFactor, 0);
 		}
 	}
 

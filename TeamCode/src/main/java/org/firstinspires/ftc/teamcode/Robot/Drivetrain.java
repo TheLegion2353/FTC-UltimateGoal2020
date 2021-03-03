@@ -40,6 +40,8 @@ public class Drivetrain extends RobotPart {
 	private double IMUAngleAcum = 0;
 	private double lastIMUAngle = 0;
 	private boolean dpadLeftPressed = false;
+	private double timer = 0;
+	private double lastTime = 0;
 
 	BNO055IMU imu;
 
@@ -49,14 +51,15 @@ public class Drivetrain extends RobotPart {
 	public Drivetrain(ControlType ct, Gamepad gp, Telemetry t) {
 		super(gp);
 		telemetry = t;
-		anglePIDController = new PID(0.01d, 0.001d, 0.00d,0.0d);
-		xPIDController = new PID(0.003d, 0.0003d, 0.00075d, 0.00002d);
+		anglePIDController = new PID(0.0075d, 0.001d, 0.205d,0.0d);
+		xPIDController = new PID(0.005d, 0.0003d, 0.0015d, 0.00002d);
 		yPIDController = new PID(0.003d, 0.0003d, 0.00075d, 0.00002d);
 		control = ct;
 		leftGroup = new HardwareController();
 		rightGroup = new HardwareController();
 		centerGroup = new HardwareController();
 		centerGroup.setDirection(DcMotor.Direction.REVERSE);
+		lastTime = System.currentTimeMillis();
 	}
 
 	public Drivetrain(ControlType ct, Gamepad gp) {
@@ -69,6 +72,7 @@ public class Drivetrain extends RobotPart {
 		rightGroup = new HardwareController();
 		centerGroup = new HardwareController();
 		centerGroup.setDirection(DcMotor.Direction.REVERSE);
+		lastTime = System.currentTimeMillis();
 	}
 
 	public void setLeftGroup(DcMotor.RunMode mode, DcMotor ... motors) {
@@ -87,26 +91,83 @@ public class Drivetrain extends RobotPart {
 	public boolean move(double x, double y) {
 		targetX = x / 2.0d;
 		targetY = y / 2.0d;
-		return (Math.abs(targetX - xPosition) < 100 && Math.abs(targetY - yPosition) < 100);
+		return (Math.abs(targetX - xPosition) < 10 && Math.abs(targetY - yPosition) < 10);
 	}
 
 	public boolean moveAngle(double a) {
 		targetAngle = a;
-		return (Math.abs(targetAngle - angle) < 0.25d);
+		if ((Math.abs(targetAngle - angle) < 5.0d)) {
+			timer += System.currentTimeMillis() - lastTime;
+		} else {
+			timer = 0;
+		}
+		if (timer > 0) {
+			timer = 0;
+			return true;
+		}
+		return false;
+	}
+
+	public boolean moveAngleExact(double a) {
+		targetAngle = a;
+		if ((Math.abs(targetAngle - angle) < 0.5d)) {
+			timer += System.currentTimeMillis() - lastTime;
+		} else {
+			timer = 0;
+		}
+		if (timer > 10) {
+			timer = 0;
+			return true;
+		}
+		return false;
 	}
 
 	public boolean move(double x, double y, double a) {
 		targetX = x / 2.0d;
 		targetY = y / 2.0d;
 		targetAngle = a;
-		return (Math.abs(targetX - xPosition) < 100 && Math.abs(targetY - yPosition) < 100 && Math.abs(targetAngle - angle) < 0.5d);
+		if ((Math.abs(targetX - xPosition) < 20 && Math.abs(targetY - yPosition) < 10 && Math.abs(targetAngle - angle) < 5.0d)) {
+			timer += System.currentTimeMillis() - lastTime;
+		} else {
+			timer = 0;
+		}
+		if (timer > 0) {
+			timer = 0;
+			return true;
+		}
+		return false;
+	}
+
+	public boolean moveExact(double x, double y) {
+		targetX = x / 2.0d;
+		targetY = y / 2.0d;
+		if ((Math.abs(targetX - xPosition) < 20 && Math.abs(targetY - yPosition) < 10)) {
+			timer += System.currentTimeMillis() - lastTime;
+		} else {
+			timer = 0;
+		}
+		if (timer > 0) {
+			timer = 0;
+			return true;
+		}
+		return false;
 	}
 
 	public boolean moveExact(double x, double y, double a) {
 		targetX = x / 2.0d;
 		targetY = y / 2.0d;
 		targetAngle = a;
-		return (Math.abs(targetX - xPosition) < 15 && Math.abs(targetY - yPosition) < 15 && Math.abs(targetAngle - angle) < 0.5d);
+		if (Math.abs(targetX - xPosition) < 5 && Math.abs(targetY - yPosition) < 5 && Math.abs(targetAngle - angle) < 0.5d) {
+			timer += System.currentTimeMillis() - lastTime;
+		} else {
+			timer = 0;
+		}
+
+		if (timer > 0) {
+			timer = 0;
+			return true;
+		}
+		return false;
 	}
 
 	public void setPosition(double x, double y, double a) {
@@ -177,6 +238,7 @@ public class Drivetrain extends RobotPart {
 		leftGroup.setSpeed(netPowerLeft);
 		rightGroup.setSpeed(netPowerRight);
 		centerGroup.setSpeed(netPowerCenter);
+		lastTime = System.currentTimeMillis();
 	}
 
 	@Override

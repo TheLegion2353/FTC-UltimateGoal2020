@@ -44,7 +44,7 @@ public class Aimer extends Arm {
 
 		switch (aimPositionSetpoints) {
 			case 1:
-				position = 1150;
+				position = 1180;
 				break;
 			case 2:
 				position = 0;

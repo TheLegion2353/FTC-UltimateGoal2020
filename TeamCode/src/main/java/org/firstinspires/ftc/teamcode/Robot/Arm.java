@@ -68,6 +68,16 @@ public class Arm extends RobotPart {
 
         PIDController.setSetPoint(position);
         double power = PIDController.PIDLoop((double)motor.getCurrentPosition());
+
+        if (gamepad.a) {
+            power = -0.5;
+        }
+
+        if (gamepad.start) {
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+
         motor.setPower(power);
         if (telemetry != null) {
             telemetry.addData("Position: ", position);
@@ -77,7 +87,7 @@ public class Arm extends RobotPart {
 
     public boolean setArmPosition(double pos) {
         position = pos;
-        return Math.abs(motor.getCurrentPosition() - pos) < 20;
+        return Math.abs(motor.getCurrentPosition() - pos) < 50;
     }
 
     public double getArmPosition() {

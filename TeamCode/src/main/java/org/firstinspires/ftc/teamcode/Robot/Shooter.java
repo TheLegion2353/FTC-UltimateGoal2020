@@ -45,7 +45,7 @@ public class Shooter extends RobotPart{
         } else if (gamepad.b) {
             pid.setSetPoint(60);
             shooter.setSpeed(averageVoltage);
-        } else if (gamepad.a) {
+        } else if (gamepad.x) {
             shooter.setSpeed(0.7);
         } else {
             pid.setSetPoint(0);

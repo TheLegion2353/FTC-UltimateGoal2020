@@ -329,15 +329,25 @@ public class AutonomousOpMode extends OpMode {
 							currentTask++;
 						}
 					} else {
-						if (robot.move(-500, -1320 * forwardFactor)) {
+						if (robot.move(-500, -1120 * forwardFactor)) {
 							currentTask++;
 						}
 					}
 				} break;
 
 				case 5: {
-					if (robot.setAngleExact(190)) {
-						currentTask++;
+					if (path == AutoPath.A) {
+						if (robot.setAngleExact(191)) {
+							currentTask++;
+						}
+					} else if (path == AutoPath.B) {
+						if (robot.setAngleExact(192)) {
+							currentTask++;
+						}
+					} else {
+						if (robot.setAngleExact(188)) {
+							currentTask++;
+						}
 					}
 				} break;
 
@@ -387,14 +397,16 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 11: {
-					if (path != AutoPath.C) {
+					if (path == AutoPath.A) {
 						if (robot.move(-500, -2100 * forwardFactor)) {
 							currentTask++;
 						}
-					} else {
-						if (robot.move(-500, -1700 * forwardFactor)) {
+					} else if (path == AutoPath.B) {
+						if (robot.move(-800, -2300 * forwardFactor)) {
 							currentTask++;
 						}
+					} else {
+						currentTask++;
 					}
 				} break;
 
@@ -416,7 +428,11 @@ public class AutonomousOpMode extends OpMode {
 
 				case 14: {
 					if (robot.setArmPosition(0)) {
-						currentTask++;
+						if (path != AutoPath.B) {
+							currentTask++;
+						} else {
+							currentTask = 66;
+						}
 					}
 				} break;
 
@@ -433,22 +449,33 @@ public class AutonomousOpMode extends OpMode {
 				} break;
 
 				case 17: {
-					if (robot.moveExact(-600, -580 * forwardFactor)) {
-						currentTask++;
-						t = System.currentTimeMillis();
-					}
+					currentTask++;
 				} break;
 
 				case 18: {
-					if (robot.moveExact(-640, -610 * forwardFactor)) {
-						currentTask++;
-						robot.setGrabber(0);
-						t = System.currentTimeMillis();
+					if (path == AutoPath.A) {
+						if (robot.moveExact(-1200, -610 * forwardFactor)) {
+							currentTask++;
+							robot.setGrabber(0);
+							t = System.currentTimeMillis();
+						}
+					} else if (path == AutoPath.B) {
+						if (robot.moveExact(-1000, -610 * forwardFactor)) {
+							currentTask++;
+							robot.setGrabber(0);
+							t = System.currentTimeMillis();
+						}
+					} else {
+						if (robot.moveExact(-650, -300 * forwardFactor)) {
+							currentTask++;
+							robot.setGrabber(0);
+							t = System.currentTimeMillis();
+						}
 					}
 				} break;
 
 				case 19: {
-					if (System.currentTimeMillis() > t + 1000) {
+					if (System.currentTimeMillis() > t + 0) {
 						if (robot.setAngle(180.0)) {
 							currentTask++;
 						}
@@ -457,12 +484,17 @@ public class AutonomousOpMode extends OpMode {
 
 				case 20: {
 					if (path == AutoPath.A) {
-						if (robot.move(50, -2000 * forwardFactor)) {
+						if (robot.move(-300, -1500 * forwardFactor)) {
+							robot.setGrabber(1);
+							currentTask++;
+						}
+					} else if (path == AutoPath.B) {
+						if (robot.move(-200, -2200 * forwardFactor)) {
 							robot.setGrabber(1);
 							currentTask++;
 						}
 					} else {
-						if (robot.move(-200, -2200 * forwardFactor)) {
+						if (robot.move(300, -2400 * forwardFactor)) {
 							robot.setGrabber(1);
 							currentTask++;
 						}
@@ -474,6 +506,12 @@ public class AutonomousOpMode extends OpMode {
 						currentTask++;
 					}
 				} break;
+
+				case 66: {
+					if (robot.move(-550, -1400 * forwardFactor)) {
+						currentTask = 15;
+					}
+				}
 			}
 		} else {
 			telemetry.addLine("Waiting...");

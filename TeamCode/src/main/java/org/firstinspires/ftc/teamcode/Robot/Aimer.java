@@ -76,6 +76,6 @@ public class Aimer extends Arm {
 	public boolean setAngle(double s) {
 		PIDController.setSetPoint(s);
 		position = s;
-		return Math.abs(motor.getCurrentPosition() - s) < 50;
+		return Math.abs(motor.getCurrentPosition() - s) < 200;
 	}
 }
